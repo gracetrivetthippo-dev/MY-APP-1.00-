@@ -21,7 +21,7 @@ import { colors, radius, spacing } from './src/theme';
 import { ArtCategory, ArtLayer, CustomArtAsset, JournalMood, JournalTemplate, LearningActivity, Relationship, ScheduleBlock, StoryScene, TaskKind, WardrobeSlotAppearance } from './src/types';
 
 type LocationId = 'entrance'|'hallway'|'library'|'primaryStudio'|'practiceStudio'|'musicWing'|'dorm'|'dormHallway'|'dormCommon'|'conservatory'|'headmistress'|'reflection'|'healthWing'|'bathroom'|'laundry'|'atelier'|'diningHall'|'theatreExterior'|'theatreLobby'|'theatreSeats'|'backstage'|'theatre'|'exterior'|'frontGates'|'mainCourtyard'|'roseCourt'|'formalGardens'|'practiceGarden'|'fountainCourtyard'|'conservatoryExterior'|'gardenPaths'|'pathToTown'|'townEntrance'|'lakeside';
-type RootStackParamList = { AcademyTabs: undefined; Grounds:undefined; Focus: { activityId:string }; Scene: { sceneId:string }; Location:{locationId:LocationId}; BookLibrary:undefined; BookReader:{bookId:string}; Relationships:undefined; Conversation:{npcId:string}; Schedule:undefined; Journal:undefined; AvatarLibrary:undefined; ArtPortal:undefined; Settings:undefined };
+type RootStackParamList = { AcademyTabs: undefined; Grounds:undefined; Focus: { activityId:string }; Scene: { sceneId:string }; Location:{locationId:LocationId}; BookLibrary:undefined; BookReader:{bookId:string}; Relationships:undefined; Conversation:{npcId:string}; Schedule:undefined; Journal:undefined; ArtPortal:undefined; Settings:undefined };
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tabs = createBottomTabNavigator();
 const locationArt = {
@@ -68,20 +68,20 @@ const balletPoses = [
   { id:'attitude', name:'Attitude derrière', note:'Lift the thigh behind and keep the bent leg supported.', art:require('./assets/avatar/poses/attitude.png') },
   { id:'jete', name:'Grand Jeté', note:'A suspended split line with straight knees and fully pointed feet.', art:require('./assets/avatar/poses/grand-jete.png') },
 ] as const;
-const avatarCatalogs = [
-  {id:'face',title:'Face Library',subtitle:'Eyes, noses, mouths, brows, face shapes, blush and freckles',art:require('./assets/avatar/catalogs/face-library.jpeg'),portrait:false},
-  {id:'hair',title:'Hair Library',subtitle:'Back styles, front pieces, braids, texture, colors and accessories',art:require('./assets/avatar/catalogs/hair-library.jpeg'),portrait:false},
-  {id:'uniform',title:'Uniform Collection',subtitle:'Academic, ballet, pointe, warm-up and seasonal uniform pieces',art:require('./assets/avatar/catalogs/uniform-collection.jpeg'),portrait:false},
-  {id:'casual',title:'Casual Collection',subtitle:'Tops, layers, dresses, bottoms, sleepwear, shoes and bags',art:require('./assets/avatar/catalogs/casual-collection.jpeg'),portrait:false},
-  {id:'formal',title:'Formal & Special Collections',subtitle:'Gala, performance, holiday and unlockable collection sets',art:require('./assets/avatar/catalogs/formal-collections.jpeg'),portrait:true},
-  {id:'details',title:'Shoes, Accessories & Expressions',subtitle:'Footwear, jewellery, bags, finishing pieces and expressions',art:require('./assets/avatar/catalogs/accessories-expressions.jpeg'),portrait:false},
-] as const;
 const avatarBusts = [
   {id:'romantic',name:'Romantic',details:'Soft round brown eyes · classic bun · warm brown',art:require('./assets/avatar/busts/romantic.png')},
   {id:'classic',name:'Classic',details:'Almond green eyes · braided bun · deep brunette',art:require('./assets/avatar/busts/classic.png')},
   {id:'dreamy',name:'Dreamy',details:'Blue-gray eyes · half-up waves · light blonde',art:require('./assets/avatar/busts/dreamy.png')},
   {id:'bold',name:'Bold',details:'Hooded dark eyes · sleek high bun · black hair',art:require('./assets/avatar/busts/bold.png')},
 ] as const;
+const wardrobeArt:Record<string,{source:any;style:any}>={
+  w19:{source:require('./assets/avatar/clothing/striped-sweater.png'),style:{width:'44%',height:'34%',top:'29%',left:'28%'}},
+  w20:{source:require('./assets/avatar/clothing/sage-day-dress.png'),style:{width:'48%',height:'54%',top:'25%',left:'26%'}},
+  w21:{source:require('./assets/avatar/clothing/blush-gala-gown.png'),style:{width:'54%',height:'42%',top:'48%',left:'23%'}},
+  w22:{source:require('./assets/avatar/clothing/black-practice-leotard.png'),style:{width:'42%',height:'48%',top:'27%',left:'29%'}},
+  w23:{source:require('./assets/avatar/clothing/rose-practice-leotard.png'),style:{width:'42%',height:'48%',top:'27%',left:'29%'}},
+  w24:{source:require('./assets/avatar/clothing/academy-warmup.png'),style:{width:'48%',height:'38%',top:'28%',left:'26%'}},
+};
 const artLayerOrder:Record<ArtLayer,number>={background:0,'hair-back':10,base:20,body:25,face:30,expression:35,outfit:40,shoes:45,'hair-front':50,accessory:60,furniture:70,portrait:75,foreground:90};
 const artLayersByCategory:Record<ArtCategory,ArtLayer[]>={
   npc:['portrait','expression','foreground'],
@@ -213,10 +213,10 @@ function AcademyScreen({ navigation }: any) {
   ];
   const openRoom=(target:string)=> target==='grounds'?navigation.navigate('Grounds'):target==='relationships'?navigation.navigate('Relationships'):target==='wardrobe'?navigation.navigate('Wardrobe'):navigation.navigate('Location',{locationId:target});
   return <Page><ScreenTitle eyebrow="Explore" title="The Academy" subtitle="Tap the map or directory to move through the academy."/><LocationHero source={locationArt.campusMap} title="Academy Campus Map" subtitle="Core and supporting locations are connected.">
-    <Pressable accessibilityLabel="Enter the academy" style={[styles.hotspot,{left:'42%',top:'29%'}]} onPress={()=>openRoom('entrance')}><Ionicons name="enter-outline" size={18} color="white"/></Pressable>
-    <Pressable accessibilityLabel="Open the studios" style={[styles.hotspot,{right:'25%',bottom:'35%'}]} onPress={()=>openRoom('primaryStudio')}><Ionicons name="musical-notes" size={18} color="white"/></Pressable>
-    <Pressable accessibilityLabel="Open the dormitory" style={[styles.hotspot,{right:'19%',top:'22%'}]} onPress={()=>openRoom('dormHallway')}><Ionicons name="bed" size={18} color="white"/></Pressable>
-  </LocationHero><View style={styles.mapFrame}><View style={styles.crest}><Text style={styles.crestText}>RBA</Text></View><Text style={styles.mapTitle}>Campus Directory</Text><View style={styles.roomGrid}>{rooms.map((r) => <Pressable key={r[0]} style={styles.room} onPress={()=>openRoom(r[3])}><Ionicons name={r[2] as any} size={28} color={colors.gold}/><Text style={styles.roomTitle}>{r[0]}</Text><Text style={styles.roomSub}>{r[1]}</Text></Pressable>)}</View></View></Page>;
+    <Pressable accessibilityLabel="Enter the academy" style={[styles.hotspot,{left:'42%',top:'29%'}]} onPress={()=>openRoom('entrance')}><Ionicons name="enter-outline" size={20} color="white"/><Text style={styles.hotspotLabel}>Hall</Text></Pressable>
+    <Pressable accessibilityLabel="Open the studios" style={[styles.hotspot,{right:'25%',bottom:'35%'}]} onPress={()=>openRoom('primaryStudio')}><Ionicons name="musical-notes" size={20} color="white"/><Text style={styles.hotspotLabel}>Studios</Text></Pressable>
+    <Pressable accessibilityLabel="Open the dormitory" style={[styles.hotspot,{right:'19%',top:'22%'}]} onPress={()=>openRoom('dormHallway')}><Ionicons name="bed" size={20} color="white"/><Text style={styles.hotspotLabel}>Dorms</Text></Pressable>
+  </LocationHero><View style={styles.mapFrame}><View style={styles.crest}><Text style={styles.crestText}>RBA</Text></View><Text style={styles.mapTitle}>Campus Directory</Text><View style={styles.roomGrid}>{rooms.map((r) => <Pressable key={r[0]} style={styles.room} onPress={()=>openRoom(r[3])}><Ionicons name={r[2] as any} size={28} color={colors.gold}/><Text style={styles.roomTitle}>{r[0]}</Text><Text style={styles.roomSub}>{r[1]}</Text><Ionicons name="chevron-forward" size={16} color={colors.rose} style={styles.roomChevron}/></Pressable>)}</View></View></Page>;
 }
 
 function GroundsScreen({navigation}:NativeStackScreenProps<RootStackParamList,'Grounds'>) {
@@ -264,30 +264,36 @@ function wardrobeSlotIsVisible(appearance:WardrobeSlotAppearance,date=new Date()
 }
 
 function WardrobeScreen({navigation}:any) {
-  const { wardrobe,wardrobeSlots,addWardrobeSlot,student,selectedPose,selectedAvatarBust,savedLooks,customArt,buyItem,equipItem,setSelectedPose,setSelectedAvatarBust,saveCurrentLook,wearSavedLook,removeSavedLook } = useAcademyStore();
-  const [newSlotName,setNewSlotName]=useState('');
-  const [newSlotAppearance,setNewSlotAppearance]=useState<WardrobeSlotAppearance>('always');
+  const { wardrobe,student,selectedPose,selectedAvatarBust,savedLooks,customArt,buyItem,equipItem,setSelectedPose,setSelectedAvatarBust,saveCurrentLook,wearSavedLook,removeSavedLook,updateCustomArt } = useAcademyStore();
+  const [editorMode,setEditorMode]=useState<'avatar'|'room'>('avatar');
+  const [category,setCategory]=useState<'dress'|'top'|'bottom'|'shoes'|'accessory'>('dress');
+  const [selectedDecorId,setSelectedDecorId]=useState<string|null>(null);
   const activePose=balletPoses.find(p=>p.id===selectedPose) ?? balletPoses[0];
   const activeBust=avatarBusts.find(bust=>bust.id===selectedAvatarBust) ?? avatarBusts[0];
   const equipped=wardrobe.filter(item=>item.equipped);
-  const visibleSlotIds=new Set(wardrobeSlots.filter(slot=>wardrobeSlotIsVisible(slot.appearance)).map(slot=>slot.id));
-  const visibleWardrobe=wardrobe.filter(item=>visibleSlotIds.has(item.slot));
-  const avatarLayers=customArt.filter(asset=>asset.category==='avatar'&&asset.targetId==='player'&&(!asset.itemId||wardrobe.some(item=>item.id===asset.itemId&&item.equipped)));
-  return <Page><TopWallet/><ScreenTitle eyebrow="Dormitory Wardrobe" title="Dress for the Day" subtitle="Choose an outfit in your room; avatar artwork will slot into the prepared layers."/>
-    <LocationHero source={locationArt.decoratedDorm} title="Your Furnished Dormitory" subtitle="The wardrobe view uses your lived-in room; the map keeps the customizable room empty.">{avatarLayers.length?<PlacedArt assets={avatarLayers}/>:<Image source={activePose.art} resizeMode="contain" style={styles.poseInRoom}/>}</LocationHero>
-    <GoldButton label="Upload & Assign Custom Artwork" onPress={()=>navigation.navigate('ArtPortal')}/>
-    <GoldButton label="Open Illustrated Avatar Library" onPress={()=>navigation.navigate('AvatarLibrary')}/>
-    <SectionLabel action={`${avatarBusts.length} choices`}>Avatar Portrait</SectionLabel>
-    <PaperCard style={styles.bustStudio}><View style={styles.bustHero}><LinearGradient colors={['#F8E4EA','#F0CDD8','#E7B7C5']} style={StyleSheet.absoluteFill}/><Text style={styles.bustFlourish}>❦</Text><Image source={activeBust.art} resizeMode="contain" style={styles.bustHeroImage}/><View style={styles.bustNameplate}><Text style={styles.bustName}>{activeBust.name}</Text><Text style={styles.bustDetails}>{activeBust.details}</Text></View></View><View style={styles.bustGrid}>{avatarBusts.map(bust=><Pressable key={bust.id} accessibilityRole="button" accessibilityState={{selected:selectedAvatarBust===bust.id}} onPress={()=>setSelectedAvatarBust(bust.id)} style={[styles.bustChoice,selectedAvatarBust===bust.id&&styles.bustChoiceActive]}><Image source={bust.art} resizeMode="contain" style={styles.bustThumb}/><Text style={styles.bustChoiceName}>{bust.name}</Text></Pressable>)}</View><Text style={styles.bustNote}>Portrait and full-body ballet pose are saved separately until the final aligned avatar layer set is ready.</Text></PaperCard>
-    <SectionLabel action={`${balletPoses.length} poses`}>Ballet Pose Studio</SectionLabel>
-    <PaperCard style={styles.posePreviewCard}><View style={styles.posePreviewStage}>{avatarLayers.length?<PlacedArt assets={avatarLayers}/>:<Image source={activePose.art} resizeMode="contain" style={styles.posePreview}/>}<View style={styles.outfitRibbon}><View style={[styles.outfitDot,{backgroundColor:equipped.find(item=>item.slot==='dress')?.color ?? colors.blush}]}/><Text style={styles.outfitRibbonText}>{avatarLayers.length?`${avatarLayers.length} custom avatar layers`:equipped.map(item=>item.name).join(' · ') || 'Practice leotard'}</Text></View></View><Text style={styles.poseName}>{activePose.name}</Text><Text style={styles.poseNote}>{activePose.note}</Text><View style={styles.poseSelector}>{balletPoses.map(p=><Pressable key={p.id} accessibilityRole="button" accessibilityState={{selected:selectedPose===p.id}} style={[styles.poseOption,selectedPose===p.id&&styles.poseOptionActive]} onPress={()=>setSelectedPose(p.id)}><Image source={p.art} resizeMode="contain" style={styles.poseThumb}/><Text style={[styles.poseOptionText,selectedPose===p.id&&styles.poseOptionTextActive]}>{p.name}</Text></Pressable>)}</View></PaperCard>
-    <SectionLabel action={`${student.coins} coins`}>Wardrobe & Boutique</SectionLabel><View style={styles.shopGrid}>{visibleWardrobe.map((item) => <PaperCard key={item.id} style={styles.shopItem}><View style={[styles.swatch,{backgroundColor:item.color}]}/><Text style={styles.itemTitle}>{item.name}</Text><Text style={styles.small}>{wardrobeSlots.find(slot=>slot.id===item.slot)?.name??item.slot} · {item.unlock ?? (item.owned ? 'Owned' : `${item.price} coins`)}</Text><GoldButton label={item.equipped ? 'Wearing' : item.owned ? 'Wear' : item.unlock ? 'Locked' : 'Buy'} disabled={item.equipped || !!item.unlock || (!item.owned && student.coins < item.price)} onPress={() => item.owned ? equipItem(item.id) : buyItem(item.id)}/></PaperCard>)}</View>
-    <SectionLabel>Wardrobe Slots</SectionLabel><View style={styles.slotList}>{wardrobeSlots.map(slot=><Pill key={slot.id} tone={wardrobeSlotIsVisible(slot.appearance)?'sage':'rose'}>{slot.name} · {slot.appearance}</Pill>)}</View><View style={styles.newSlotRow}><TextInput value={newSlotName} onChangeText={setNewSlotName} placeholder="New slot name" placeholderTextColor="#A9989A" style={[styles.scheduleInput,styles.flex]}/><Pressable style={styles.newSlotButton} onPress={()=>{if(!newSlotName.trim())return;const id=`slot-${Date.now()}`;addWardrobeSlot({id,name:newSlotName.trim(),appearance:newSlotAppearance,createdAt:new Date().toISOString()});setNewSlotName('');}}><Ionicons name="add" size={20} color="white"/></Pressable></View><View style={styles.choiceWrap}>{(['always','winter','spring','fall','summer','christmas','halloween'] as WardrobeSlotAppearance[]).map(appearance=><Pressable key={appearance} style={[styles.choiceChip,newSlotAppearance===appearance&&styles.choiceChipActive]} onPress={()=>setNewSlotAppearance(appearance)}><Text style={[styles.choiceText,newSlotAppearance===appearance&&styles.choiceTextActive]}>{appearance}</Text></Pressable>)}</View>
-    <SectionLabel action={`${savedLooks.length}/12`}>Saved Looks</SectionLabel><GoldButton label="Save Current Pose & Outfit" onPress={saveCurrentLook}/>
-    {savedLooks.length===0?<PaperCard><Text style={styles.body}>Save a look to keep its pose and every equipped wardrobe piece together.</Text></PaperCard>:savedLooks.map(look=><PaperCard key={look.id} style={styles.savedLook}><View style={styles.flex}><Text style={styles.itemTitle}>{look.name}</Text><Text style={styles.small}>{balletPoses.find(p=>p.id===look.poseId)?.name} · {look.equippedItemIds.length} pieces</Text></View><Pressable style={styles.lookAction} onPress={()=>wearSavedLook(look.id)}><Ionicons name="sparkles" size={17} color={colors.rose}/><Text style={styles.lookActionText}>Wear</Text></Pressable><Pressable accessibilityLabel={`Delete ${look.name}`} onPress={()=>removeSavedLook(look.id)}><Ionicons name="trash-outline" size={19} color={colors.muted}/></Pressable></PaperCard>)}
+  const avatarLayers=customArt.filter(asset=>asset.category==='avatar'&&asset.targetId==='player'&&asset.enabled&&(!asset.itemId||wardrobe.some(item=>item.id===asset.itemId&&item.equipped)));
+  const roomDecor=customArt.filter(asset=>asset.category==='furniture'&&asset.targetId==='dorm');
+  const selectedDecor=roomDecor.find(asset=>asset.id===selectedDecorId)??roomDecor[0];
+  const categoryItems=wardrobe.filter(item=>item.slot===category);
+  const nudgeDecor=(key:'x'|'y'|'scale',amount:number)=>{if(!selectedDecor)return;const next=(selectedDecor[key] as number)+amount;const bounds=key==='scale'?[.2,3]:[-100,100];updateCustomArt(selectedDecor.id,{[key]:Math.round(Math.max(bounds[0],Math.min(bounds[1],next))*100)/100});};
+  return <Page><TopWallet/><ScreenTitle eyebrow="Dormitory Dressing Room" title="Avatar & Room Editor" subtitle="Tap what you want and see it immediately."/>
+    <View style={styles.editorModeTabs}><Pressable style={[styles.editorModeTab,editorMode==='avatar'&&styles.editorModeTabActive]} onPress={()=>setEditorMode('avatar')}><Ionicons name="person-outline" size={18} color={editorMode==='avatar'?'white':colors.plum}/><Text style={[styles.editorModeText,editorMode==='avatar'&&styles.editorModeTextActive]}>Avatar</Text></Pressable><Pressable style={[styles.editorModeTab,editorMode==='room'&&styles.editorModeTabActive]} onPress={()=>setEditorMode('room')}><Ionicons name="bed-outline" size={18} color={editorMode==='room'?'white':colors.plum}/><Text style={[styles.editorModeText,editorMode==='room'&&styles.editorModeTextActive]}>Room</Text></Pressable></View>
+    {editorMode==='avatar'?<>
+      <View style={styles.avatarEditorStage}><LinearGradient colors={['#F8E8E5','#F4DDD9','#EAD0CC']} style={StyleSheet.absoluteFill}/><Image source={activePose.art} resizeMode="contain" style={styles.avatarEditorPose}/>{equipped.filter(item=>wardrobeArt[item.id]).map(item=><Image key={item.id} source={wardrobeArt[item.id].source} resizeMode="contain" style={[styles.wearableOverlay,wardrobeArt[item.id].style]}/>)}<PlacedArt assets={avatarLayers}/><View style={styles.editorStageLabel}><Text style={styles.editorStageName}>{activeBust.name} · {activePose.name}</Text><Text style={styles.editorStageSub}>{equipped.map(item=>item.name).join(' · ')||'Choose a piece below'}</Text></View></View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.editorCategories}>{(['dress','top','bottom','shoes','accessory'] as const).map(value=><Pressable key={value} style={[styles.editorCategory,category===value&&styles.editorCategoryActive]} onPress={()=>setCategory(value)}><Text style={[styles.editorCategoryText,category===value&&styles.editorCategoryTextActive]}>{value==='dress'?'Clothes':value==='top'?'Layers':value==='bottom'?'Bottoms':value}</Text></Pressable>)}</ScrollView>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} decelerationRate="fast" contentContainerStyle={styles.itemCarousel}>{categoryItems.map(item=>{const art=wardrobeArt[item.id];return <Pressable key={item.id} style={[styles.clothingCard,item.equipped&&styles.clothingCardActive]} onPress={()=>item.owned?equipItem(item.id):!item.unlock&&student.coins>=item.price?buyItem(item.id):undefined}><View style={styles.clothingThumb}>{art?<Image source={art.source} resizeMode="contain" style={styles.clothingThumbImage}/>:<View style={[styles.clothingSwatch,{backgroundColor:item.color}]}/>}</View><Text numberOfLines={2} style={styles.clothingName}>{item.name}</Text><Text style={styles.clothingMeta}>{item.equipped?'Wearing':item.owned?'Tap to wear':item.unlock?'Locked':`${item.price} coins`}</Text></Pressable>})}</ScrollView>
+      <SectionLabel>Face</SectionLabel><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.itemCarousel}>{avatarBusts.map(bust=><Pressable key={bust.id} onPress={()=>setSelectedAvatarBust(bust.id)} style={[styles.facePick,selectedAvatarBust===bust.id&&styles.clothingCardActive]}><Image source={bust.art} resizeMode="contain" style={styles.facePickImage}/><Text style={styles.clothingName}>{bust.name}</Text></Pressable>)}</ScrollView>
+      <SectionLabel>Pose</SectionLabel><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.itemCarousel}>{balletPoses.map(pose=><Pressable key={pose.id} onPress={()=>setSelectedPose(pose.id)} style={[styles.posePick,selectedPose===pose.id&&styles.clothingCardActive]}><Image source={pose.art} resizeMode="contain" style={styles.posePickImage}/><Text style={styles.clothingName}>{pose.name}</Text></Pressable>)}</ScrollView>
+      <View style={styles.editorActions}><Pressable style={styles.softEditorButton} onPress={()=>navigation.navigate('ArtPortal')}><Ionicons name="add-circle-outline" size={18} color={colors.plum}/><Text style={styles.softEditorButtonText}>Add my own clothing/art</Text></Pressable><Pressable style={styles.softEditorButton} onPress={saveCurrentLook}><Ionicons name="bookmark-outline" size={18} color={colors.plum}/><Text style={styles.softEditorButtonText}>Save this look</Text></Pressable></View>
+      {savedLooks.length>0&&<><SectionLabel>Saved Looks</SectionLabel><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.savedLookRow}>{savedLooks.map(look=><Pressable key={look.id} style={styles.savedLookCard} onPress={()=>wearSavedLook(look.id)} onLongPress={()=>removeSavedLook(look.id)}><Ionicons name="sparkles-outline" size={18} color={colors.gold}/><Text style={styles.savedLookName}>{look.name}</Text><Text style={styles.small}>Tap wear · hold delete</Text></Pressable>)}</ScrollView></>}
+    </>:<>
+      <View style={styles.roomEditorStage}><Image source={locationArt.dorm} resizeMode="cover" style={StyleSheet.absoluteFill}/><PlacedArt assets={roomDecor}/>{roomDecor.length===0&&<View style={styles.roomEditorEmpty}><Ionicons name="bed-outline" size={30} color={colors.gold}/><Text style={styles.body}>Your empty dorm is ready for furniture.</Text></View>}</View>
+      <View style={styles.editorActions}><Pressable style={styles.softEditorButton} onPress={()=>navigation.navigate('ArtPortal')}><Ionicons name="add-circle-outline" size={18} color={colors.plum}/><Text style={styles.softEditorButtonText}>Add furniture or tiny object</Text></Pressable></View>
+      <SectionLabel action={`${roomDecor.length}`}>My Room Pieces</SectionLabel>{roomDecor.length?<ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.itemCarousel}>{roomDecor.map(asset=><Pressable key={asset.id} style={[styles.decorCard,selectedDecor?.id===asset.id&&styles.clothingCardActive]} onPress={()=>setSelectedDecorId(asset.id)}><Image source={{uri:asset.uri}} resizeMode="contain" style={styles.decorThumb}/><Text numberOfLines={2} style={styles.clothingName}>{asset.name}</Text><Pressable style={styles.visibilityTap} onPress={()=>updateCustomArt(asset.id,{enabled:!asset.enabled})}><Ionicons name={asset.enabled?'eye':'eye-off'} size={16} color={asset.enabled?colors.sage:colors.muted}/></Pressable></Pressable>)}</ScrollView>:<PaperCard><Text style={styles.body}>Add your first furniture PNG and it will appear here as a simple tap-to-select object.</Text></PaperCard>}
+      {selectedDecor&&<PaperCard style={styles.positionCard}><View style={styles.rowBetween}><View><Text style={styles.itemTitle}>{selectedDecor.name}</Text><Text style={styles.small}>Move and resize the selected piece</Text></View><Pressable onPress={()=>updateCustomArt(selectedDecor.id,{x:0,y:0,scale:1})}><Text style={styles.positionReset}>Reset</Text></Pressable></View><View style={styles.positionControls}><View style={styles.directionPad}><Pressable style={[styles.directionButton,styles.directionUp]} onPress={()=>nudgeDecor('y',-2)}><Ionicons name="chevron-up" size={20} color={colors.plum}/></Pressable><Pressable style={[styles.directionButton,styles.directionLeft]} onPress={()=>nudgeDecor('x',-2)}><Ionicons name="chevron-back" size={20} color={colors.plum}/></Pressable><View style={styles.directionCenter}/><Pressable style={[styles.directionButton,styles.directionRight]} onPress={()=>nudgeDecor('x',2)}><Ionicons name="chevron-forward" size={20} color={colors.plum}/></Pressable><Pressable style={[styles.directionButton,styles.directionDown]} onPress={()=>nudgeDecor('y',2)}><Ionicons name="chevron-down" size={20} color={colors.plum}/></Pressable></View><View style={styles.scaleControls}><Pressable style={styles.scaleButton} onPress={()=>nudgeDecor('scale',-.04)}><Ionicons name="remove" size={22} color={colors.plum}/><Text style={styles.scaleText}>Smaller</Text></Pressable><Pressable style={styles.scaleButton} onPress={()=>nudgeDecor('scale',.04)}><Ionicons name="add" size={22} color={colors.plum}/><Text style={styles.scaleText}>Bigger</Text></Pressable></View></View></PaperCard>}
+    </>}
   </Page>;
 }
-
 function ProgressScreen() {
   const { student, stats, sessions, tasks } = useAcademyStore();
   const statLabels: Record<string,string> = { ballet:'Ballet Technique', strength:'Strength', flexibility:'Flexibility', academics:'Academics', french:'French', wellbeing:'Wellbeing' };
@@ -440,21 +446,7 @@ function ArtPortalScreen({navigation}:NativeStackScreenProps<RootStackParamList,
     {category==='furniture'&&<><SectionLabel>Tiny Dorm Object Ideas</SectionLabel><View style={styles.choiceWrap}>{decorIdeas.map(idea=><Pressable key={idea} style={styles.decorIdea} onPress={()=>{setName(idea);setVariant(idea.toLowerCase().replace(/\s+/g,'-'));setLayer('foreground');}}><Text style={styles.decorIdeaText}>{idea}</Text></Pressable>)}</View></>}
     <GoldButton label="Choose Image & Assign" onPress={upload}/>
     <SectionLabel action={`${preview.length} layers`}>Live Layer Preview</SectionLabel><View style={styles.artPreview}>{category==='furniture'&&<Image source={locationArt.dorm} resizeMode="cover" style={StyleSheet.absoluteFill}/>}<PlacedArt assets={preview}/>{preview.length===0&&<View style={styles.artEmpty}><Ionicons name="images-outline" size={34} color={colors.gold}/><Text style={styles.body}>Assigned artwork will stack here.</Text></View>}</View>
-    <SectionLabel action={`${shown.length} total`}>Manage Uploaded Artwork</SectionLabel>{shown.length===0?<PaperCard><Text style={styles.body}>No {category} art has been uploaded yet.</Text></PaperCard>:shown.map(asset=><PaperCard key={asset.id} style={styles.artAssetCard}><View style={styles.row}><Image source={{uri:asset.uri}} resizeMode="contain" style={styles.artAssetThumb}/><View style={styles.flex}><TextInput value={asset.name} onChangeText={text=>updateCustomArt(asset.id,{name:text})} style={styles.artInlineName}/><Text style={styles.small}>{targets.find(target=>target.id===asset.targetId)?.label??asset.targetId} · {asset.itemId?wardrobe.find(item=>item.id===asset.itemId)?.name??asset.itemId:'General avatar'} · {asset.variant} · {asset.layer}</Text></View><Pressable onPress={()=>updateCustomArt(asset.id,{enabled:!asset.enabled})}><Ionicons name={asset.enabled?'eye':'eye-off'} size={20} color={asset.enabled?colors.sage:colors.muted}/></Pressable></View><View style={styles.artControls}><View style={styles.artControlGroup}><Text style={styles.artControlLabel}>Horizontal {asset.x}</Text><View style={styles.artButtons}><Pressable style={styles.artMiniButton} onPress={()=>nudge(asset,'x',-5)}><Text>−</Text></Pressable><Pressable style={styles.artMiniButton} onPress={()=>nudge(asset,'x',5)}><Text>+</Text></Pressable></View></View><View style={styles.artControlGroup}><Text style={styles.artControlLabel}>Vertical {asset.y}</Text><View style={styles.artButtons}><Pressable style={styles.artMiniButton} onPress={()=>nudge(asset,'y',-5)}><Text>−</Text></Pressable><Pressable style={styles.artMiniButton} onPress={()=>nudge(asset,'y',5)}><Text>+</Text></Pressable></View></View><View style={styles.artControlGroup}><Text style={styles.artControlLabel}>Scale {asset.scale}</Text><View style={styles.artButtons}><Pressable style={styles.artMiniButton} onPress={()=>nudge(asset,'scale',-.05)}><Text>−</Text></Pressable><Pressable style={styles.artMiniButton} onPress={()=>nudge(asset,'scale',.05)}><Text>+</Text></Pressable></View></View><View style={styles.artControlGroup}><Text style={styles.artControlLabel}>Depth {asset.zIndex}</Text><View style={styles.artButtons}><Pressable style={styles.artMiniButton} onPress={()=>nudge(asset,'zIndex',-1)}><Text>−</Text></Pressable><Pressable style={styles.artMiniButton} onPress={()=>nudge(asset,'zIndex',1)}><Text>+</Text></Pressable></View></View></View><Pressable style={styles.artDelete} onPress={()=>Alert.alert('Remove artwork?',`Remove ${asset.name} from the app?`,[{text:'Cancel',style:'cancel'},{text:'Remove',style:'destructive',onPress:()=>deleteCustomArt(asset.id)}])}><Ionicons name="trash-outline" size={16} color={colors.rose}/><Text style={styles.artDeleteText}>Remove assignment</Text></Pressable></PaperCard>)}
-  </Page>;
-}
-
-function AvatarLibraryScreen({navigation}:NativeStackScreenProps<RootStackParamList,'AvatarLibrary'>) {
-  const [selectedId,setSelectedId]=useState<(typeof avatarCatalogs)[number]['id']>('face');
-  const selected=avatarCatalogs.find(catalog=>catalog.id===selectedId) ?? avatarCatalogs[0];
-  const notes=useAcademyStore(state=>state.avatarDesignNotes);
-  const updateNote=useAcademyStore(state=>state.updateAvatarDesignNote);
-  return <Page><View style={styles.readerTop}><Pressable style={styles.paperBack} onPress={()=>navigation.goBack()}><Ionicons name="chevron-back" size={23} color={colors.plum}/></Pressable><Pill tone="gold">6 ORIGINAL SHEETS</Pill></View><ScreenTitle eyebrow="Imported Artwork" title="Illustrated Avatar Library" subtitle="Browse the original catalogs, record exact choices, and keep the source art ready for transparent-layer extraction."/>
-    <PaperCard style={styles.catalogNotice}><View style={styles.row}><Ionicons name="layers-outline" size={24} color={colors.gold}/><View style={styles.flex}><Text style={styles.itemTitle}>Source artwork registry</Text><Text style={styles.body}>These are preserved flat reference sheets. Your choices save now; individual aligned cutouts will be extracted in the next avatar-art pass.</Text></View></View></PaperCard>
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.catalogTabs}>{avatarCatalogs.map(catalog=><Pressable key={catalog.id} onPress={()=>setSelectedId(catalog.id)} style={[styles.catalogTab,selectedId===catalog.id&&styles.catalogTabActive]}><Text style={[styles.catalogTabText,selectedId===catalog.id&&styles.catalogTabTextActive]}>{catalog.title}</Text></Pressable>)}</ScrollView>
-    <SectionLabel>{selected.title}</SectionLabel><Text style={styles.catalogSubtitle}>{selected.subtitle}</Text>
-    <View style={styles.catalogViewport}><ScrollView horizontal showsHorizontalScrollIndicator contentContainerStyle={styles.catalogCanvas} minimumZoomScale={1} maximumZoomScale={3}><Image source={selected.art} resizeMode="contain" style={selected.portrait?styles.catalogPortrait:styles.catalogLandscape}/></ScrollView></View>
-    <SectionLabel>Your Design Notes</SectionLabel><TextInput value={notes[selected.id]??''} onChangeText={text=>updateNote(selected.id,text)} multiline placeholder={`Record choices from ${selected.title}, such as item names, numbers, colors, or combinations.`} placeholderTextColor="#A9989A" style={styles.catalogNotes}/><Text style={styles.catalogSaved}>Saved automatically on this device.</Text>
+    <SectionLabel action={`${shown.length} total`}>Manage Uploaded Artwork</SectionLabel>{shown.length===0?<PaperCard><Text style={styles.body}>No {category} art has been uploaded yet.</Text></PaperCard>:shown.map(asset=><PaperCard key={asset.id} style={styles.artAssetCard}><View style={styles.row}><Image source={{uri:asset.uri}} resizeMode="contain" style={styles.artAssetThumb}/><View style={styles.flex}><TextInput value={asset.name} onChangeText={text=>updateCustomArt(asset.id,{name:text})} style={styles.artInlineName}/><Text style={styles.small}>{targets.find(target=>target.id===asset.targetId)?.label??asset.targetId} · {asset.itemId?wardrobe.find(item=>item.id===asset.itemId)?.name??asset.itemId:'General avatar'} · {asset.variant} · {asset.layer}</Text></View><Pressable onPress={()=>updateCustomArt(asset.id,{enabled:!asset.enabled})}><Ionicons name={asset.enabled?'eye':'eye-off'} size={20} color={asset.enabled?colors.sage:colors.muted}/></Pressable></View><View style={styles.artControls}><View style={styles.artControlGroup}><Text style={styles.artControlLabel}>Horizontal {asset.x}</Text><View style={styles.artButtons}><Pressable style={styles.artMiniButton} onPress={()=>nudge(asset,'x',-2)}><Text>−</Text></Pressable><Pressable style={styles.artMiniButton} onPress={()=>nudge(asset,'x',2)}><Text>+</Text></Pressable></View></View><View style={styles.artControlGroup}><Text style={styles.artControlLabel}>Vertical {asset.y}</Text><View style={styles.artButtons}><Pressable style={styles.artMiniButton} onPress={()=>nudge(asset,'y',-2)}><Text>−</Text></Pressable><Pressable style={styles.artMiniButton} onPress={()=>nudge(asset,'y',2)}><Text>+</Text></Pressable></View></View><View style={styles.artControlGroup}><Text style={styles.artControlLabel}>Scale {asset.scale}</Text><View style={styles.artButtons}><Pressable style={styles.artMiniButton} onPress={()=>nudge(asset,'scale',-.02)}><Text>−</Text></Pressable><Pressable style={styles.artMiniButton} onPress={()=>nudge(asset,'scale',.02)}><Text>+</Text></Pressable></View></View><View style={styles.artControlGroup}><Text style={styles.artControlLabel}>Depth {asset.zIndex}</Text><View style={styles.artButtons}><Pressable style={styles.artMiniButton} onPress={()=>nudge(asset,'zIndex',-1)}><Text>−</Text></Pressable><Pressable style={styles.artMiniButton} onPress={()=>nudge(asset,'zIndex',1)}><Text>+</Text></Pressable></View></View></View><View style={styles.artUtilityRow}><Pressable style={styles.artReset} onPress={()=>updateCustomArt(asset.id,{x:0,y:0,scale:1,zIndex:0,opacity:1})}><Ionicons name="locate-outline" size={16} color={colors.plum}/><Text style={styles.artResetText}>Center & reset size</Text></Pressable></View><Pressable style={styles.artDelete} onPress={()=>Alert.alert('Remove artwork?',`Remove ${asset.name} from the app?`,[{text:'Cancel',style:'cancel'},{text:'Remove',style:'destructive',onPress:()=>deleteCustomArt(asset.id)}])}><Ionicons name="trash-outline" size={16} color={colors.rose}/><Text style={styles.artDeleteText}>Remove assignment</Text></Pressable></PaperCard>)}
   </Page>;
 }
 
@@ -611,7 +603,7 @@ export default function App() {
   useEffect(()=>useAcademyStore.persist.onFinishHydration(()=>setHydrated(true)),[]);
   if(!hydrated)return <SafeAreaProvider><StatusBar style="dark"/><SafeAreaView style={styles.loadingSafe}><Text style={styles.onboardingMark}>RBA</Text><Text style={styles.loadingText}>Preparing your academy...</Text></SafeAreaView></SafeAreaProvider>;
   if(!hasCompletedOnboarding)return <SafeAreaProvider><StatusBar style="dark"/><OnboardingScreen/></SafeAreaProvider>;
-  return <SafeAreaProvider><NavigationContainer><StatusBar style="dark"/><Stack.Navigator screenOptions={{headerShown:false}}><Stack.Screen name="AcademyTabs" component={TabNavigator}/><Stack.Screen name="Grounds" component={GroundsScreen}/><Stack.Screen name="Focus" component={FocusScreen}/><Stack.Screen name="Scene" component={SceneScreen}/><Stack.Screen name="Location" component={LocationScreen}/><Stack.Screen name="BookLibrary" component={BookLibraryScreen}/><Stack.Screen name="BookReader" component={BookReaderScreen}/><Stack.Screen name="Relationships" component={RelationshipsScreen}/><Stack.Screen name="Conversation" component={ConversationScreen}/><Stack.Screen name="Schedule" component={ScheduleScreen}/><Stack.Screen name="Journal" component={JournalScreen}/><Stack.Screen name="AvatarLibrary" component={AvatarLibraryScreen}/><Stack.Screen name="ArtPortal" component={ArtPortalScreen}/><Stack.Screen name="Settings" component={SettingsScreen}/></Stack.Navigator></NavigationContainer></SafeAreaProvider>;
+  return <SafeAreaProvider><NavigationContainer><StatusBar style="dark"/><Stack.Navigator screenOptions={{headerShown:false}}><Stack.Screen name="AcademyTabs" component={TabNavigator}/><Stack.Screen name="Grounds" component={GroundsScreen}/><Stack.Screen name="Focus" component={FocusScreen}/><Stack.Screen name="Scene" component={SceneScreen}/><Stack.Screen name="Location" component={LocationScreen}/><Stack.Screen name="BookLibrary" component={BookLibraryScreen}/><Stack.Screen name="BookReader" component={BookReaderScreen}/><Stack.Screen name="Relationships" component={RelationshipsScreen}/><Stack.Screen name="Conversation" component={ConversationScreen}/><Stack.Screen name="Schedule" component={ScheduleScreen}/><Stack.Screen name="Journal" component={JournalScreen}/><Stack.Screen name="ArtPortal" component={ArtPortalScreen}/><Stack.Screen name="Settings" component={SettingsScreen}/></Stack.Navigator></NavigationContainer></SafeAreaProvider>;
 }
 
 const styles=StyleSheet.create({
@@ -682,12 +674,12 @@ const styles=StyleSheet.create({
   diagnosticValue:{fontFamily:'Georgia',fontSize:15,fontWeight:'700',color:colors.plum},
   resetButton:{borderRadius:radius.md,backgroundColor:colors.danger,padding:14,flexDirection:'row',alignItems:'center',justifyContent:'center',gap:8},
   resetButtonText:{fontSize:11,fontWeight:'800',color:'white'},
-  locationHero:{height:230,borderRadius:radius.lg,overflow:'hidden',justifyContent:'flex-end',marginBottom:spacing.md,borderWidth:1,borderColor:colors.gold},
+  locationHero:{height:330,borderRadius:radius.lg,overflow:'hidden',justifyContent:'flex-end',marginBottom:spacing.md,borderWidth:1,borderColor:colors.gold},
   locationImage:{borderRadius:radius.lg},
   locationCaption:{padding:spacing.md},
   locationTitle:{fontFamily:'Georgia',fontSize:23,color:'white',fontWeight:'700'},
   locationSubtitle:{fontSize:11,color:'#F2E4E4',marginTop:3},
-  hotspot:{position:'absolute',width:38,height:38,borderRadius:19,backgroundColor:'rgba(105,73,84,.82)',borderWidth:1,borderColor:colors.gold,alignItems:'center',justifyContent:'center'},
+  hotspot:{position:'absolute',width:62,height:62,borderRadius:31,backgroundColor:'rgba(105,73,84,.82)',borderWidth:1,borderColor:colors.gold,alignItems:'center',justifyContent:'center'},
   roomHotspot:{backgroundColor:'rgba(185,123,137,.9)',shadowColor:colors.shadow,shadowOpacity:.28,shadowRadius:8,elevation:4},
   locationPage:{flex:1,backgroundColor:colors.plum},
   locationTop:{position:'absolute',left:20,right:20,top:55,flexDirection:'row',justifyContent:'space-between',alignItems:'center'},
@@ -718,31 +710,31 @@ const styles=StyleSheet.create({
   poseInRoom:{position:'absolute',right:8,bottom:0,width:138,height:215},
   todayAvatar:{position:'absolute',right:2,bottom:0,width:142,height:218},
   bustStudio:{overflow:'hidden'},
-  bustHero:{height:330,borderRadius:radius.md,overflow:'hidden',alignItems:'center',justifyContent:'flex-end',borderWidth:1,borderColor:colors.goldPale},
+  bustHero:{height:410,borderRadius:radius.md,overflow:'hidden',alignItems:'center',justifyContent:'flex-end',borderWidth:1,borderColor:colors.goldPale},
   bustFlourish:{position:'absolute',top:13,fontFamily:'Georgia',fontSize:24,color:'rgba(154,118,67,.48)'},
   bustHeroImage:{width:'86%',height:'88%'},
   bustNameplate:{position:'absolute',left:10,right:10,bottom:10,backgroundColor:'rgba(255,253,248,.92)',borderRadius:radius.md,borderWidth:1,borderColor:colors.goldPale,paddingHorizontal:13,paddingVertical:9},
   bustName:{fontFamily:'Georgia',fontSize:18,fontWeight:'700',color:colors.plum,textAlign:'center'},
   bustDetails:{fontSize:10,lineHeight:14,color:colors.muted,textAlign:'center',marginTop:2},
-  bustGrid:{flexDirection:'row',gap:7,marginTop:12},
-  bustChoice:{flex:1,height:126,borderRadius:radius.md,borderWidth:1,borderColor:colors.goldPale,backgroundColor:'#F8ECED',alignItems:'center',padding:5},
+  bustGrid:{gap:10,marginTop:12,paddingRight:8},
+  bustChoice:{width:132,height:158,borderRadius:radius.md,borderWidth:1,borderColor:colors.goldPale,backgroundColor:'#F8ECED',alignItems:'center',padding:5},
   bustChoiceActive:{backgroundColor:'#E7BEC8',borderColor:colors.rose,borderWidth:2},
-  bustThumb:{width:'100%',height:94},
+  bustThumb:{width:'100%',height:122},
   bustChoiceName:{fontFamily:'Georgia',fontSize:10,fontWeight:'700',color:colors.plum,marginTop:2},
   bustNote:{fontSize:10,lineHeight:15,color:colors.muted,textAlign:'center',fontStyle:'italic',marginTop:11},
   posePreviewCard:{overflow:'hidden'},
-  posePreviewStage:{height:330,borderRadius:radius.md,backgroundColor:'#281E22',borderWidth:1,borderColor:colors.goldPale,alignItems:'center',justifyContent:'center',overflow:'hidden'},
+  posePreviewStage:{height:430,borderRadius:radius.md,backgroundColor:'#281E22',borderWidth:1,borderColor:colors.goldPale,alignItems:'center',justifyContent:'center',overflow:'hidden'},
   posePreview:{width:'100%',height:'100%'},
   outfitRibbon:{position:'absolute',left:10,right:10,bottom:10,minHeight:36,borderRadius:radius.pill,backgroundColor:'rgba(255,253,248,.9)',borderWidth:1,borderColor:colors.goldPale,paddingHorizontal:12,flexDirection:'row',alignItems:'center',gap:7},
   outfitDot:{width:13,height:13,borderRadius:7,borderWidth:1,borderColor:colors.gold},
   outfitRibbonText:{flex:1,fontSize:10,fontWeight:'700',color:colors.plum},
   poseName:{fontFamily:'Georgia',fontSize:21,fontWeight:'700',color:colors.plum,textAlign:'center',marginTop:14},
   poseNote:{fontSize:12,lineHeight:18,color:colors.muted,textAlign:'center',marginTop:5,marginHorizontal:10},
-  poseSelector:{flexDirection:'row',flexWrap:'wrap',gap:8,marginTop:15},
-  poseOption:{width:'31.5%',minHeight:126,borderRadius:radius.md,backgroundColor:'#F8ECED',borderWidth:1,borderColor:colors.goldPale,padding:6,alignItems:'center'},
+  poseSelector:{gap:10,marginTop:15,paddingRight:8},
+  poseOption:{width:142,minHeight:166,borderRadius:radius.md,backgroundColor:'#F8ECED',borderWidth:1,borderColor:colors.goldPale,padding:6,alignItems:'center'},
   poseOptionActive:{backgroundColor:'#E7BEC8',borderColor:colors.rose,borderWidth:2},
-  poseThumb:{width:'100%',height:88},
-  poseOptionText:{fontSize:9,lineHeight:12,fontWeight:'800',color:colors.plum,textAlign:'center'},
+  poseThumb:{width:'100%',height:124},
+  poseOptionText:{fontSize:11,lineHeight:14,fontWeight:'800',color:colors.plum,textAlign:'center'},
   poseOptionTextActive:{color:'#56313D'},
   savedLook:{marginTop:9,flexDirection:'row',alignItems:'center',gap:9},
   lookAction:{borderRadius:radius.pill,backgroundColor:'#F7E3E8',borderWidth:1,borderColor:colors.goldPale,paddingHorizontal:11,paddingVertical:8,flexDirection:'row',alignItems:'center',gap:5},
@@ -788,7 +780,7 @@ const styles=StyleSheet.create({
   crestText:{fontFamily:'Georgia',fontWeight:'800',color:colors.goldPale},
   mapTitle:{fontFamily:'Georgia',textAlign:'center',fontSize:22,color:colors.plum,marginVertical:12},
   roomGrid:{flexDirection:'row',flexWrap:'wrap',gap:10},
-  room:{width:'48%',minHeight:125,backgroundColor:'rgba(255,255,255,.62)',borderWidth:1,borderColor:colors.goldPale,borderRadius:radius.md,padding:13,justifyContent:'center'},
+  room:{width:'48%',minHeight:142,backgroundColor:'rgba(255,255,255,.62)',borderWidth:1,borderColor:colors.goldPale,borderRadius:radius.md,padding:13,justifyContent:'center'},
   roomTitle:{fontFamily:'Georgia',color:colors.plum,fontWeight:'700',fontSize:14,marginTop:7},
   roomSub:{fontSize:10,color:colors.muted,marginTop:3},
   avatarStage:{height:260,alignItems:'center',justifyContent:'center',backgroundColor:'#F2E6E1',borderRadius:radius.md},
@@ -879,19 +871,6 @@ const styles=StyleSheet.create({
   addChecklistText:{fontSize:10,fontWeight:'800',color:colors.plum},
   noteCard:{marginBottom:9,position:'relative',borderLeftWidth:4,borderLeftColor:colors.gold},
   noteCheckRow:{flexDirection:'row',alignItems:'center',gap:5,marginTop:4},
-  catalogNotice:{borderWidth:1,borderColor:colors.gold,backgroundColor:'#FFF8EC'},
-  catalogTabs:{gap:7,paddingVertical:5},
-  catalogTab:{borderRadius:radius.pill,borderWidth:1,borderColor:colors.goldPale,backgroundColor:colors.paper,paddingHorizontal:13,paddingVertical:9},
-  catalogTabActive:{backgroundColor:colors.plum,borderColor:colors.gold},
-  catalogTabText:{fontSize:10,fontWeight:'800',color:colors.plum},
-  catalogTabTextActive:{color:'white'},
-  catalogSubtitle:{fontFamily:'Georgia',fontStyle:'italic',fontSize:12,color:colors.muted,marginTop:-9,marginBottom:10},
-  catalogViewport:{height:480,borderRadius:radius.md,overflow:'hidden',borderWidth:2,borderColor:colors.gold,backgroundColor:'#F4E7E0'},
-  catalogCanvas:{alignItems:'center'},
-  catalogLandscape:{width:720,height:480},
-  catalogPortrait:{width:360,height:540},
-  catalogNotes:{minHeight:130,textAlignVertical:'top',fontFamily:'Georgia',fontSize:14,lineHeight:22,color:colors.ink,backgroundColor:colors.paper,borderWidth:1,borderColor:colors.goldPale,borderRadius:radius.md,padding:14},
-  catalogSaved:{fontSize:9,color:colors.sage,fontWeight:'800',textAlign:'right',marginTop:5},
   focusSafe:{flex:1,backgroundColor:'#F7DDE6'},
   focusPage:{padding:spacing.lg,paddingBottom:50,gap:16},
   focusEyebrow:{color:colors.plum,fontSize:11,letterSpacing:2.5,fontWeight:'800',textAlign:'center'},
@@ -984,7 +963,7 @@ const styles=StyleSheet.create({
   artTargetText:{fontSize:10,fontWeight:'800',color:colors.plum,textTransform:'capitalize'},
   decorIdea:{borderRadius:radius.pill,borderWidth:1,borderColor:'#DDB5BE',backgroundColor:'#F9E2E8',paddingHorizontal:11,paddingVertical:8},
   decorIdeaText:{fontSize:9,fontWeight:'800',color:colors.plum},
-  artPreview:{height:340,borderRadius:radius.lg,overflow:'hidden',backgroundColor:'#EFDCE1',borderWidth:2,borderColor:colors.gold,alignItems:'center',justifyContent:'center'},
+  artPreview:{height:470,borderRadius:radius.lg,overflow:'hidden',backgroundColor:'#EFDCE1',borderWidth:2,borderColor:colors.gold,alignItems:'center',justifyContent:'center'},
   artEmpty:{alignItems:'center',justifyContent:'center',backgroundColor:'rgba(255,253,248,.86)',borderRadius:radius.md,padding:18},
   artAssetCard:{marginBottom:10,borderLeftWidth:4,borderLeftColor:colors.rose},
   artAssetThumb:{width:70,height:82,borderRadius:radius.md,backgroundColor:'#F3E2E5'},
@@ -996,6 +975,11 @@ const styles=StyleSheet.create({
   artMiniButton:{width:35,height:30,borderRadius:10,backgroundColor:colors.paper,borderWidth:1,borderColor:colors.goldPale,alignItems:'center',justifyContent:'center'},
   artDelete:{flexDirection:'row',alignItems:'center',justifyContent:'center',gap:6,paddingTop:10,marginTop:9,borderTopWidth:1,borderTopColor:colors.goldPale},
   artDeleteText:{fontSize:9,fontWeight:'800',color:colors.rose},
+  hotspotLabel:{fontSize:8,fontWeight:'900',color:'white',marginTop:2,textShadowColor:'rgba(0,0,0,.35)',textShadowRadius:2},
+  roomChevron:{position:'absolute',right:9,top:9},
+  artUtilityRow:{marginTop:8,flexDirection:'row',justifyContent:'flex-end'},
+  artReset:{flexDirection:'row',alignItems:'center',gap:6,borderWidth:1,borderColor:colors.goldPale,backgroundColor:'#FFF8F3',paddingHorizontal:11,paddingVertical:8,borderRadius:radius.pill},
+  artResetText:{fontSize:10,fontWeight:'800',color:colors.plum},
   readerTop:{flexDirection:'row',justifyContent:'space-between',alignItems:'center',paddingTop:4},
   paperBack:{width:40,height:40,borderRadius:20,backgroundColor:colors.paper,borderWidth:1,borderColor:colors.goldPale,alignItems:'center',justifyContent:'center'},
   bookCover:{width:48,height:62,borderRadius:5,backgroundColor:colors.plum,borderWidth:2,borderColor:colors.gold,alignItems:'center',justifyContent:'center'},
@@ -1011,6 +995,55 @@ const styles=StyleSheet.create({
   bookPage:{paddingHorizontal:27,paddingVertical:32},
   bookText:{fontFamily:'Georgia',color:'#3F3434'},
   bookOrnament:{fontFamily:'Georgia',fontSize:24,textAlign:'center',color:colors.gold,marginVertical:18},
+  editorModeTabs:{flexDirection:'row',gap:8,marginBottom:12,backgroundColor:'#F7EDE7',padding:5,borderRadius:radius.pill,borderWidth:1,borderColor:colors.goldPale},
+  editorModeTab:{flex:1,minHeight:46,borderRadius:radius.pill,alignItems:'center',justifyContent:'center',flexDirection:'row',gap:7},
+  editorModeTabActive:{backgroundColor:colors.plum},
+  editorModeText:{fontSize:12,fontWeight:'800',color:colors.plum},
+  editorModeTextActive:{color:'white'},
+  avatarEditorStage:{height:440,borderRadius:radius.lg,overflow:'hidden',borderWidth:2,borderColor:colors.gold,alignItems:'center',justifyContent:'center',marginBottom:12},
+  avatarEditorPose:{position:'absolute',width:'82%',height:'92%',bottom:18},
+  wearableOverlay:{position:'absolute'},
+  editorStageLabel:{position:'absolute',left:12,right:12,bottom:10,backgroundColor:'rgba(255,253,248,.92)',borderRadius:radius.md,paddingHorizontal:12,paddingVertical:9,borderWidth:1,borderColor:colors.goldPale},
+  editorStageName:{fontFamily:'Georgia',fontSize:14,fontWeight:'700',color:colors.plum,textAlign:'center'},
+  editorStageSub:{fontSize:9,color:colors.muted,textAlign:'center',marginTop:3},
+  editorCategories:{gap:7,paddingBottom:10},
+  editorCategory:{minWidth:88,paddingHorizontal:15,paddingVertical:10,borderRadius:radius.pill,borderWidth:1,borderColor:colors.goldPale,backgroundColor:colors.paper,alignItems:'center'},
+  editorCategoryActive:{backgroundColor:colors.rose,borderColor:colors.gold},
+  editorCategoryText:{fontSize:11,fontWeight:'800',color:colors.plum,textTransform:'capitalize'},
+  editorCategoryTextActive:{color:'white'},
+  itemCarousel:{gap:9,paddingVertical:5,paddingRight:12},
+  clothingCard:{width:108,minHeight:150,borderRadius:radius.md,borderWidth:1,borderColor:colors.goldPale,backgroundColor:'#FFF9F3',padding:7},
+  clothingCardActive:{borderWidth:2,borderColor:colors.rose,backgroundColor:'#FCE9ED'},
+  clothingThumb:{height:92,borderRadius:11,backgroundColor:'#F1E1DD',alignItems:'center',justifyContent:'center',overflow:'hidden'},
+  clothingThumbImage:{width:'94%',height:'94%'},
+  clothingSwatch:{width:54,height:68,borderRadius:16,borderWidth:1,borderColor:colors.goldPale},
+  clothingName:{fontFamily:'Georgia',fontSize:10,fontWeight:'700',color:colors.plum,textAlign:'center',marginTop:6},
+  clothingMeta:{fontSize:8,color:colors.muted,textAlign:'center',marginTop:3},
+  facePick:{width:112,height:145,borderRadius:radius.md,borderWidth:1,borderColor:colors.goldPale,backgroundColor:'#FFF9F3',padding:7},
+  facePickImage:{width:'100%',height:108},
+  posePick:{width:112,height:168,borderRadius:radius.md,borderWidth:1,borderColor:colors.goldPale,backgroundColor:'#FFF9F3',padding:7},
+  posePickImage:{width:'100%',height:128},
+  editorActions:{flexDirection:'row',gap:8,marginTop:12,flexWrap:'wrap'},
+  softEditorButton:{flexGrow:1,minWidth:'46%',borderRadius:radius.md,borderWidth:1,borderColor:colors.goldPale,backgroundColor:'#F9EEF1',paddingHorizontal:12,paddingVertical:11,flexDirection:'row',alignItems:'center',justifyContent:'center',gap:6},
+  softEditorButtonText:{fontSize:10,fontWeight:'800',color:colors.plum,textAlign:'center'},
+  savedLookRow:{gap:8,paddingBottom:8},
+  savedLookCard:{width:132,borderRadius:radius.md,borderWidth:1,borderColor:colors.goldPale,backgroundColor:'#FFF9F3',padding:11,alignItems:'center'},
+  savedLookName:{fontFamily:'Georgia',fontSize:11,fontWeight:'700',color:colors.plum,textAlign:'center',marginTop:5},
+  roomEditorStage:{height:430,borderRadius:radius.lg,overflow:'hidden',borderWidth:2,borderColor:colors.gold,alignItems:'center',justifyContent:'center',marginBottom:4,backgroundColor:'#E8D9CF'},
+  roomEditorEmpty:{backgroundColor:'rgba(255,253,248,.88)',borderRadius:radius.md,padding:16,alignItems:'center',gap:7},
+  decorCard:{width:112,minHeight:145,borderRadius:radius.md,borderWidth:1,borderColor:colors.goldPale,backgroundColor:'#FFF9F3',padding:7,position:'relative'},
+  decorThumb:{width:'100%',height:96,borderRadius:10,backgroundColor:'#F1E1DD'},
+  visibilityTap:{position:'absolute',right:6,top:6,width:28,height:28,borderRadius:14,backgroundColor:'rgba(255,253,248,.9)',alignItems:'center',justifyContent:'center'},
+  positionCard:{marginTop:10,borderWidth:2,borderColor:colors.gold},
+  positionReset:{fontSize:10,fontWeight:'800',color:colors.rose},
+  positionControls:{flexDirection:'row',alignItems:'center',justifyContent:'space-around',marginTop:10,gap:16},
+  directionPad:{width:132,height:132,position:'relative'},
+  directionButton:{position:'absolute',width:42,height:42,borderRadius:21,backgroundColor:'#F9EEF1',borderWidth:1,borderColor:colors.goldPale,alignItems:'center',justifyContent:'center'},
+  directionUp:{top:0,left:45},directionDown:{bottom:0,left:45},directionLeft:{left:0,top:45},directionRight:{right:0,top:45},
+  directionCenter:{position:'absolute',left:52,top:52,width:28,height:28,borderRadius:14,backgroundColor:colors.goldPale},
+  scaleControls:{gap:9},
+  scaleButton:{minWidth:92,borderRadius:radius.md,borderWidth:1,borderColor:colors.goldPale,backgroundColor:'#FFF9F3',paddingHorizontal:12,paddingVertical:10,alignItems:'center'},
+  scaleText:{fontSize:9,fontWeight:'800',color:colors.plum,marginTop:2},
   tabBar:{height:82,paddingTop:8,paddingBottom:20,backgroundColor:colors.paper,borderTopColor:colors.goldPale},
   tabLabel:{fontSize:10,fontWeight:'700'},
 });

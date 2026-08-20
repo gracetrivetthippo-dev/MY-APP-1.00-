@@ -40,11 +40,19 @@ export const seedWardrobe: WardrobeItem[] = [
   { id:'w16', name:'Summer Practice Layer', slot:'summer', price:80, owned:false, equipped:false, color:'#E6B7A8' },
   { id:'w17', name:'Christmas Gala Detail', slot:'christmas', price:140, owned:false, equipped:false, color:'#B94E61' },
   { id:'w18', name:'Halloween Masquerade Detail', slot:'halloween', price:130, owned:false, equipped:false, color:'#5E4B67' },
+  { id:'w19', name:'Striped Rehearsal Sweater', slot:'top', price:0, owned:true, equipped:false, color:'#D7C6C0' },
+  { id:'w20', name:'Sage Day Dress', slot:'dress', price:0, owned:true, equipped:false, color:'#BFC2A7' },
+  { id:'w21', name:'Blush Gala Skirt', slot:'bottom', price:180, owned:true, equipped:false, color:'#E5C3C2' },
+  { id:'w22', name:'Black Practice Leotard', slot:'dress', price:0, owned:true, equipped:false, color:'#554A4E' },
+  { id:'w23', name:'Rose Practice Leotard', slot:'dress', price:0, owned:true, equipped:false, color:'#C98794' },
+  { id:'w24', name:'Academy Warm-Up Jacket', slot:'top', price:0, owned:true, equipped:false, color:'#D7B4AE' },
 ];
 
 export const seedWardrobeSlots: WardrobeSlot[] = [
   {id:'hair',name:'Hair',appearance:'always',createdAt:new Date().toISOString()},
-  {id:'dress',name:'Dress',appearance:'always',createdAt:new Date().toISOString()},
+  {id:'top',name:'Tops & Layers',appearance:'always',createdAt:new Date().toISOString()},
+  {id:'dress',name:'Dresses & Leotards',appearance:'always',createdAt:new Date().toISOString()},
+  {id:'bottom',name:'Skirts & Bottoms',appearance:'always',createdAt:new Date().toISOString()},
   {id:'shoes',name:'Shoes',appearance:'always',createdAt:new Date().toISOString()},
   {id:'accessory',name:'Accessory',appearance:'always',createdAt:new Date().toISOString()},
   {id:'winter',name:'Winter',appearance:'winter',createdAt:new Date().toISOString()},
