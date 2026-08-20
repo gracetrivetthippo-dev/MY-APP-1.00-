@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { seedMentorQuests, seedRelationships, seedScenes, seedSchedule, seedTasks, seedWardrobe, seedWardrobeSlots } from '../data/seed';
 import { buildStoryQueue, StoryTriggerContext } from '../story/triggerEngine';
-import { AcademyBook, AvatarPoseId, ClothingFit, CustomArtAsset, DailyGift, DailyPreferences, FocusSession, JournalEntry, MentorQuest, Notebook, Relationship, SavedLook, ScheduleBlock, StatKey, StoryScene, StorySceneProgress, StudyNote, Task, WardrobeItem, WardrobeSlot } from '../types';
+import { AcademyBook, AvatarPoseId, CustomArtAsset, DailyGift, DailyPreferences, FocusSession, JournalEntry, MentorQuest, Notebook, Relationship, SavedLook, ScheduleBlock, StatKey, StoryScene, StorySceneProgress, StudyNote, Task, TodaySectionPreference, WardrobeItem, WardrobeSlot } from '../types';
 
 interface AcademyState {
   hasCompletedOnboarding: boolean;
@@ -33,7 +33,9 @@ interface AcademyState {
   studyNotes: StudyNote[];
   avatarDesignNotes: Record<string,string>;
   selectedAvatarBust: 'romantic'|'classic'|'dreamy'|'bold';
-  clothingFits:Record<string,ClothingFit>;
+  clothingFits: Record<string,{x:number;y:number;scale:number}>;
+  roomAvatarPlacements: Record<string,{x:number;y:number;scale:number}>;
+  todayLayout: TodaySectionPreference[];
   storyFlags:string[];
   customArt:CustomArtAsset[];
   dailyGiftClaims:string[];
@@ -78,7 +80,11 @@ interface AcademyState {
   deleteStudyNote: (id:string) => void;
   updateAvatarDesignNote: (catalogId:string, note:string) => void;
   setSelectedAvatarBust: (bustId:'romantic'|'classic'|'dreamy'|'bold') => void;
-  updateClothingFit:(itemId:string,updates:Partial<ClothingFit>)=>void;
+  updateClothingFit:(itemId:string,updates:Partial<{x:number;y:number;scale:number}>)=>void;
+  updateRoomAvatarPlacement:(locationId:string,updates:Partial<{x:number;y:number;scale:number}>)=>void;
+  setTodaySectionVisible:(id:TodaySectionPreference['id'],visible:boolean)=>void;
+  moveTodaySection:(id:TodaySectionPreference['id'],direction:-1|1)=>void;
+  resetTodayLayout:()=>void;
   addCustomArt:(asset:CustomArtAsset)=>void;
   updateCustomArt:(id:string,updates:Partial<CustomArtAsset>)=>void;
   deleteCustomArt:(id:string)=>void;
@@ -89,6 +95,12 @@ interface AcademyState {
   restoreBackup:(data:any)=>void;
   resetDemo: () => void;
 }
+
+const defaultTodayLayout:TodaySectionPreference[]=[
+  {id:'schedule',visible:true},{id:'room',visible:true},{id:'daily',visible:true},{id:'agenda',visible:true},
+  {id:'people',visible:true},{id:'moment',visible:true},{id:'quests',visible:true},{id:'goals',visible:true},
+  {id:'reminder',visible:true},{id:'assignments',visible:true},{id:'focus',visible:true},{id:'doors',visible:true},
+];
 
 const initial = {
   hasCompletedOnboarding: false,
@@ -122,6 +134,9 @@ const initial = {
   studyNotes: [] as StudyNote[],
   avatarDesignNotes: {} as Record<string,string>,
   selectedAvatarBust: 'romantic' as const,
+  clothingFits: {} as Record<string,{x:number;y:number;scale:number}>,
+  roomAvatarPlacements: {} as Record<string,{x:number;y:number;scale:number}>,
+  todayLayout: defaultTodayLayout,
   storyFlags: [] as string[],
   customArt: [] as CustomArtAsset[],
   dailyGiftClaims: [] as string[],
@@ -176,7 +191,6 @@ export const useAcademyStore = create<AcademyState>()(persist((set) => ({
   addWardrobeSlot: (slot) => set((state)=>({wardrobeSlots:[...state.wardrobeSlots,slot]})),
   addScheduleBlock: (block) => set((state)=>storyRefresh(state,{schedule:[...state.schedule,block]}) as AcademyState),
   addScheduleBlocks: (blocks) => set((state)=>storyRefresh(state,{schedule:[...state.schedule,...blocks]}) as AcademyState),
-   clothingFits: {},
   updateScheduleBlock: (id, updates) => set((state)=>storyRefresh(state,{schedule:state.schedule.map(block=>block.id===id?{...block,...updates,id}:block)}) as AcademyState),
   deleteScheduleBlock: (id) => set((state)=>storyRefresh(state,{schedule:state.schedule.filter(block=>block.id!==id)}) as AcademyState),
   duplicateScheduleBlock: (id) => set((state)=>{
@@ -232,13 +246,24 @@ export const useAcademyStore = create<AcademyState>()(persist((set) => ({
   setSelectedPose: (poseId) => set({ selectedPose:poseId }),
   saveCurrentLook: () => set((state) => {
     const nextNumber=state.savedLooks.length + 1;
-    const look:SavedLook={id:`look-${Date.now()}`,name:`Academy Look ${nextNumber}`,poseId:state.selectedPose,equippedItemIds:state.wardrobe.filter(item=>item.equipped).map(item=>item.id),createdAt:new Date().toISOString()};
+    const look:SavedLook={
+      id:`look-${Date.now()}`,
+      name:`Academy Look ${nextNumber}`,
+      poseId:state.selectedPose,
+      bustId:state.selectedAvatarBust,
+      equippedItemIds:state.wardrobe.filter(item=>item.equipped).map(item=>item.id),
+      createdAt:new Date().toISOString()
+    };
     return { savedLooks:[look,...state.savedLooks].slice(0,12) };
   }),
   wearSavedLook: (id) => set((state) => {
     const look=state.savedLooks.find(entry=>entry.id===id);
     if(!look) return state;
-    return storyRefresh(state,{ selectedPose:look.poseId, wardrobe:state.wardrobe.map(item=>({...item,equipped:look.equippedItemIds.includes(item.id)})) }) as AcademyState;
+    return storyRefresh(state,{
+      selectedPose:look.poseId,
+      selectedAvatarBust:look.bustId ?? state.selectedAvatarBust,
+      wardrobe:state.wardrobe.map(item=>({...item,equipped:look.equippedItemIds.includes(item.id)}))
+    }) as AcademyState;
   }),
   removeSavedLook: (id) => set((state) => ({ savedLooks:state.savedLooks.filter(look=>look.id!==id) })),
   refreshStoryEvents: (nowIso) => set((state)=>{
@@ -281,18 +306,11 @@ export const useAcademyStore = create<AcademyState>()(persist((set) => ({
   deleteStudyNote: (id) => set((state)=>storyRefresh(state,{studyNotes:state.studyNotes.filter(note=>note.id!==id)}) as AcademyState),
   updateAvatarDesignNote: (catalogId, note) => set((state)=>({avatarDesignNotes:{...state.avatarDesignNotes,[catalogId]:note}})),
   setSelectedAvatarBust: (bustId) => set({selectedAvatarBust:bustId}),
-updateClothingFit:(itemId,updates)=>set((state)=>({
-  clothingFits:{
-    ...state.clothingFits,
-    [itemId]:{
-      ...state.clothingFits[itemId],
-      ...updates,
-      x: updates.x ?? state.clothingFits[itemId]?.x ?? 0,
-      y: updates.y ?? state.clothingFits[itemId]?.y ?? 0,
-      scale: updates.scale ?? state.clothingFits[itemId]?.scale ?? 1,
-    }
-  }
-})),
+  updateClothingFit:(itemId,updates)=>set((state)=>({clothingFits:{...state.clothingFits,[itemId]:{...state.clothingFits[itemId],...updates,x:updates.x??state.clothingFits[itemId]?.x??0,y:updates.y??state.clothingFits[itemId]?.y??0,scale:updates.scale??state.clothingFits[itemId]?.scale??1}}})),
+  updateRoomAvatarPlacement:(locationId,updates)=>set((state)=>({roomAvatarPlacements:{...state.roomAvatarPlacements,[locationId]:{...state.roomAvatarPlacements[locationId],...updates,x:updates.x??state.roomAvatarPlacements[locationId]?.x??0,y:updates.y??state.roomAvatarPlacements[locationId]?.y??0,scale:updates.scale??state.roomAvatarPlacements[locationId]?.scale??1}}})),
+  setTodaySectionVisible:(id,visible)=>set(state=>({todayLayout:state.todayLayout.map(section=>section.id===id?{...section,visible}:section)})),
+  moveTodaySection:(id,direction)=>set(state=>{const index=state.todayLayout.findIndex(section=>section.id===id);const target=index+direction;if(index<0||target<0||target>=state.todayLayout.length)return state;const next=[...state.todayLayout];[next[index],next[target]]=[next[target],next[index]];return {todayLayout:next};}),
+  resetTodayLayout:()=>set({todayLayout:defaultTodayLayout.map(section=>({...section}))}),
   addCustomArt:(asset)=>set(state=>({customArt:[asset,...state.customArt]})),
   updateCustomArt:(id,updates)=>set(state=>({customArt:state.customArt.map(asset=>asset.id===id?{...asset,...updates,id}:asset)})),
   deleteCustomArt:(id)=>set(state=>({customArt:state.customArt.filter(asset=>asset.id!==id)})),
@@ -319,10 +337,10 @@ updateClothingFit:(itemId,updates)=>set((state)=>({
     storyProgress:Array.isArray(data.storyProgress)?data.storyProgress:state.storyProgress,dismissedStoryEvents:Array.isArray(data.dismissedStoryEvents)?data.dismissedStoryEvents:state.dismissedStoryEvents,dismissedStoryEventDate:data.dismissedStoryEventDate??state.dismissedStoryEventDate,dailyNpcSceneHistory:data.dailyNpcSceneHistory??state.dailyNpcSceneHistory,npcKnowledge:data.npcKnowledge??state.npcKnowledge,
     visitedLocations:Array.isArray(data.visitedLocations)?data.visitedLocations:state.visitedLocations,locationVisitCounts:data.locationVisitCounts??state.locationVisitCounts,journalEntries:Array.isArray(data.journalEntries)?data.journalEntries:state.journalEntries,
     notebooks:Array.isArray(data.notebooks)?data.notebooks:state.notebooks,studyNotes:Array.isArray(data.studyNotes)?data.studyNotes:state.studyNotes,
-    avatarDesignNotes:data.avatarDesignNotes??state.avatarDesignNotes,selectedAvatarBust:data.selectedAvatarBust??state.selectedAvatarBust,
+    avatarDesignNotes:data.avatarDesignNotes??state.avatarDesignNotes,selectedAvatarBust:data.selectedAvatarBust??state.selectedAvatarBust,clothingFits:data.clothingFits??state.clothingFits,roomAvatarPlacements:data.roomAvatarPlacements??state.roomAvatarPlacements,todayLayout:Array.isArray(data.todayLayout)?data.todayLayout:state.todayLayout,
     storyFlags:Array.isArray(data.storyFlags)?data.storyFlags:state.storyFlags,customArt:Array.isArray(data.customArt)?data.customArt:state.customArt,
     dailyGiftClaims:Array.isArray(data.dailyGiftClaims)?data.dailyGiftClaims:state.dailyGiftClaims,dailyBlockCompletions:data.dailyBlockCompletions??state.dailyBlockCompletions,
     lastActiveDate:data.lastActiveDate??state.lastActiveDate,dailyPreferences:data.dailyPreferences??state.dailyPreferences,
   }) as AcademyState),
   resetDemo: () => set(initial),
-}), { name:'rba-academy-state-v1', version:19, storage:createJSONStorage(() => AsyncStorage), migrate:(persisted:any)=>({ ...initial, ...persisted, hasCompletedOnboarding:persisted?.hasCompletedOnboarding??!!persisted?.student, story:seedScenes, relationships:seedRelationships.map(seed=>({...seed,...(persisted?.relationships ?? []).find((old:Relationship)=>old.id===seed.id),name:seed.name,role:seed.role,note:seed.note,personality:seed.personality,likes:seed.likes,dislikes:seed.dislikes,homeLocation:seed.homeLocation,scheduleHint:seed.scheduleHint,initials:seed.initials})), schedule:(persisted?.schedule ?? initial.schedule).filter((block:ScheduleBlock)=>!(block.id==='s3'&&block.title==='French Practice')).map((block:ScheduleBlock)=>({...block,days:block.days?.length?block.days:[block.day],recurrence:block.recurrence??'weekly',affectsStory:block.affectsStory??true})), storyProgress:persisted?.storyProgress ?? (persisted?.story ?? []).filter((scene:StoryScene)=>scene.status==='complete').map((scene:StoryScene)=>({sceneId:scene.id,completions:1})), storyEventQueue:persisted?.storyEventQueue ?? [], dismissedStoryEvents:persisted?.dismissedStoryEvents ?? [], dismissedStoryEventDate:persisted?.dismissedStoryEventDate??'', dailyNpcSceneHistory:persisted?.dailyNpcSceneHistory??{}, npcKnowledge:persisted?.npcKnowledge??{}, visitedLocations:persisted?.visitedLocations ?? [], locationVisitCounts:persisted?.locationVisitCounts??{}, journalEntries:persisted?.journalEntries ?? [], notebooks:persisted?.notebooks?.length?persisted.notebooks:initial.notebooks, studyNotes:persisted?.studyNotes ?? [], quests:Array.isArray(persisted?.quests)?persisted.quests:initial.quests, wardrobe:mergeSeedCollection(seedWardrobe,Array.isArray(persisted?.wardrobe)?persisted.wardrobe:[]), wardrobeSlots:mergeSeedCollection(seedWardrobeSlots,Array.isArray(persisted?.wardrobeSlots)?persisted.wardrobeSlots:[]), avatarDesignNotes:persisted?.avatarDesignNotes ?? {}, selectedAvatarBust:persisted?.selectedAvatarBust ?? initial.selectedAvatarBust, clothingFits:persisted?.clothingFits ?? {}, storyFlags:persisted?.storyFlags ?? [], customArt:persisted?.customArt ?? [],dailyGiftClaims:persisted?.dailyGiftClaims??[],dailyBlockCompletions:persisted?.dailyBlockCompletions??{},lastActiveDate:persisted?.lastActiveDate??'',dailyPreferences:persisted?.dailyPreferences??initial.dailyPreferences }) }));
+}), { name:'rba-academy-state-v1', version:20, storage:createJSONStorage(() => AsyncStorage), migrate:(persisted:any)=>({ ...initial, ...persisted, hasCompletedOnboarding:persisted?.hasCompletedOnboarding??!!persisted?.student, story:seedScenes, relationships:seedRelationships.map(seed=>({...seed,...(persisted?.relationships ?? []).find((old:Relationship)=>old.id===seed.id),name:seed.name,role:seed.role,note:seed.note,personality:seed.personality,likes:seed.likes,dislikes:seed.dislikes,homeLocation:seed.homeLocation,scheduleHint:seed.scheduleHint,initials:seed.initials})), schedule:(persisted?.schedule ?? initial.schedule).filter((block:ScheduleBlock)=>!(block.id==='s3'&&block.title==='French Practice')).map((block:ScheduleBlock)=>({...block,days:block.days?.length?block.days:[block.day],recurrence:block.recurrence??'weekly',affectsStory:block.affectsStory??true})), storyProgress:persisted?.storyProgress ?? (persisted?.story ?? []).filter((scene:StoryScene)=>scene.status==='complete').map((scene:StoryScene)=>({sceneId:scene.id,completions:1})), storyEventQueue:persisted?.storyEventQueue ?? [], dismissedStoryEvents:persisted?.dismissedStoryEvents ?? [], dismissedStoryEventDate:persisted?.dismissedStoryEventDate??'', dailyNpcSceneHistory:persisted?.dailyNpcSceneHistory??{}, npcKnowledge:persisted?.npcKnowledge??{}, visitedLocations:persisted?.visitedLocations ?? [], locationVisitCounts:persisted?.locationVisitCounts??{}, journalEntries:persisted?.journalEntries ?? [], notebooks:persisted?.notebooks?.length?persisted.notebooks:initial.notebooks, studyNotes:persisted?.studyNotes ?? [], quests:Array.isArray(persisted?.quests)?persisted.quests:initial.quests, wardrobe:mergeSeedCollection(seedWardrobe,Array.isArray(persisted?.wardrobe)?persisted.wardrobe:[]), wardrobeSlots:mergeSeedCollection(seedWardrobeSlots,Array.isArray(persisted?.wardrobeSlots)?persisted.wardrobeSlots:[]), avatarDesignNotes:persisted?.avatarDesignNotes ?? {}, selectedAvatarBust:persisted?.selectedAvatarBust ?? initial.selectedAvatarBust, clothingFits:persisted?.clothingFits ?? {}, roomAvatarPlacements:persisted?.roomAvatarPlacements ?? {}, todayLayout:Array.isArray(persisted?.todayLayout)?persisted.todayLayout:defaultTodayLayout, storyFlags:persisted?.storyFlags ?? [], customArt:persisted?.customArt ?? [],dailyGiftClaims:persisted?.dailyGiftClaims??[],dailyBlockCompletions:persisted?.dailyBlockCompletions??{},lastActiveDate:persisted?.lastActiveDate??'',dailyPreferences:persisted?.dailyPreferences??initial.dailyPreferences }) }));

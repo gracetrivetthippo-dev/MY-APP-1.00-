@@ -2,6 +2,8 @@ export type StatKey = 'ballet' | 'strength' | 'flexibility' | 'academics' | 'fre
 export type TaskKind = 'ballet' | 'school' | 'french' | 'wellbeing' | 'personal';
 export type ActivityKind = 'study' | 'practice' | 'french' | 'reading' | 'wellbeing' | 'custom';
 export type AvatarPoseId = 'first' | 'fifth' | 'tendu' | 'arabesque' | 'attitude' | 'jete';
+export type TodaySectionId = 'schedule'|'room'|'daily'|'agenda'|'people'|'moment'|'quests'|'goals'|'reminder'|'assignments'|'focus'|'doors';
+export interface TodaySectionPreference { id:TodaySectionId; visible:boolean; }
 
 export interface Task { id: string; title: string; detail: string; kind: TaskKind; minutes: number; xp: number; coins: number; completed: boolean; dueLabel: string; }
 export interface MentorQuest { id:string; title:string; description:string; mentorId:string; kind:'session_kind'|'location_visit'|'journal_template'|'item_owned'; target:string; goal:number; progress:number; rewardItemId:string; completed:boolean; }
@@ -18,8 +20,15 @@ export interface Relationship {
 export type WardrobeSlotAppearance='always'|'winter'|'spring'|'fall'|'summer'|'christmas'|'halloween';
 export interface WardrobeSlot { id:string; name:string; appearance:WardrobeSlotAppearance; createdAt:string; }
 export interface WardrobeItem { id: string; name: string; slot: string; price: number; owned: boolean; equipped: boolean; color: string; unlock?: string; }
-export interface ClothingFit { x:number; y:number; scale:number; }
-export interface SavedLook { id:string; name:string; poseId:AvatarPoseId; equippedItemIds:string[]; createdAt:string; }
+export interface SavedLook {
+  id:string;
+  name:string;
+  poseId:AvatarPoseId;
+  bustId:'romantic'|'classic'|'dreamy'|'bold';
+  equippedItemIds:string[];
+  clothingFits?:Record<string,{x:number;y:number;scale:number}>;
+  createdAt:string;
+}
 export interface DialogueLine { speaker:string; text:string; expression?:'neutral'|'warm'|'amused'|'worried'|'stern'|'surprised'; }
 export interface StoryChoice {
   id:string; label:string; response?:DialogueLine[];
