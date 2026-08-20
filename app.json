@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "Royal Ballet Academy",
+    "slug": "royal-ballet-academy",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.grace.royalballetacademy"
+    },
+    "android": {
+      "package": "com.grace.royalballetacademy",
+      "adaptiveIcon": {
+        "backgroundColor": "#F8F0E7"
+      }
+    },
+    "plugins": ["expo-font"]
+  }
+}
