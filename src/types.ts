@@ -4,6 +4,7 @@ export type ActivityKind = 'study' | 'practice' | 'french' | 'reading' | 'wellbe
 export type AvatarPoseId = 'first' | 'fifth' | 'tendu' | 'arabesque' | 'attitude' | 'jete';
 
 export interface Task { id: string; title: string; detail: string; kind: TaskKind; minutes: number; xp: number; coins: number; completed: boolean; dueLabel: string; }
+export interface MentorQuest { id:string; title:string; description:string; mentorId:string; kind:'session_kind'|'location_visit'|'journal_template'|'item_owned'; target:string; goal:number; progress:number; rewardItemId:string; completed:boolean; }
 export interface ScheduleBlock {
   id:string; day:number; days?:number[]; start:string; end:string; title:string; location:string; kind:TaskKind;
   notes?:string; recurrence?:'weekly'|'once'; date?:string; startsOn?:string; endsOn?:string;
@@ -14,7 +15,9 @@ export interface Relationship {
   pronouns?:string; year?:string; personality?:string; likes?:string[]; dislikes?:string[];
   homeLocation?:string; scheduleHint?:string; initials?:string;
 }
-export interface WardrobeItem { id: string; name: string; slot: 'hair' | 'dress' | 'shoes' | 'accessory'; price: number; owned: boolean; equipped: boolean; color: string; unlock?: string; }
+export type WardrobeSlotAppearance='always'|'winter'|'spring'|'fall'|'summer'|'christmas'|'halloween';
+export interface WardrobeSlot { id:string; name:string; appearance:WardrobeSlotAppearance; createdAt:string; }
+export interface WardrobeItem { id: string; name: string; slot: string; price: number; owned: boolean; equipped: boolean; color: string; unlock?: string; }
 export interface SavedLook { id:string; name:string; poseId:AvatarPoseId; equippedItemIds:string[]; createdAt:string; }
 export interface DialogueLine { speaker:string; text:string; expression?:'neutral'|'warm'|'amused'|'worried'|'stern'|'surprised'; }
 export interface StoryChoice {
@@ -51,7 +54,7 @@ export interface StoryScene {
 }
 export interface StorySceneProgress { sceneId:string; completions:number; lastCompletedAt?:string; dismissedAt?:string; choiceId?:string; }
 export interface StoryTriggerResult { eligible:boolean; expired:boolean; reasons:{label:string;met:boolean}[]; }
-export interface FocusSession { id: string; kind: ActivityKind; title: string; minutes: number; completedAt: string; xp: number; }
+export interface FocusSession { id: string; kind: ActivityKind; title: string; minutes: number; completedAt: string; xp: number; goal?: string; customSteps?: string; }
 export interface LearningActivity { id: string; kind: ActivityKind; title: string; subtitle: string; minutes: number; stat: StatKey; steps: string[]; resource?: { label: string; url: string }; }
 export interface AcademyBook { id:string; title:string; content:string; importedAt:string; lastPosition:number; wordCount:number; }
 export type JournalMood = 'calm'|'proud'|'tired'|'hopeful'|'frustrated'|'excited'|'neutral';
@@ -70,7 +73,7 @@ export interface StudyNote {
 export type ArtCategory='npc'|'avatar'|'furniture'|'location';
 export type ArtLayer='background'|'base'|'body'|'face'|'expression'|'hair-back'|'outfit'|'shoes'|'hair-front'|'accessory'|'furniture'|'foreground'|'portrait';
 export interface CustomArtAsset {
-  id:string; name:string; uri:string; category:ArtCategory; targetId:string; variant:string; layer:ArtLayer;
+  id:string; name:string; uri:string; category:ArtCategory; targetId:string; variant:string; layer:ArtLayer; itemId?:string;
   zIndex:number; x:number; y:number; scale:number; opacity:number; enabled:boolean; createdAt:string;
 }
 export interface DailyGift { id:string; name:string; description:string; icon:string; coins:number; xp:number; relationshipId?:string; relationshipPoints?:number; }

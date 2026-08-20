@@ -206,4 +206,109 @@ export const yearOneScenes:StoryScene[] = [
     {id:'banquet-letter',label:'Write one letter to your future self',relationshipEffects:[{relationshipId:'r6',points:12}],flags:['year_one_complete','future_letter'],response:[{speaker:'Narrator',text:'You seal the letter without promising perfection—only that you will keep returning to the work.'}]},
     {id:'banquet-friends',label:'Spend the final evening with your friends',relationshipEffects:[{relationshipId:'r2',points:20},{relationshipId:'r3',points:15},{relationshipId:'r5',points:20}],flags:['year_one_complete','friends_final_evening'],response:[{speaker:'Narrator',text:'The last evening is not dramatic. That is why you remember it: laughter, ribbon, music through an open door, and nowhere else you need to be.'}]},
   ],reward:{coins:100,xp:150}},
+  {id:'y1-oct-lantern-evening',chapter:6,title:'Lanterns in the Courtyard',summary:'The academy pauses its rivalries for one evening of light, music, and uncertain invitations.',status:'locked',startsAt:'2026-10-20',optional:true,locationId:'mainCourtyard',castIds:['r2','r3','r5'],priority:68,triggers:{mode:'ALL',conditions:[{type:'scene_complete',sceneId:'y1-sep-first-class'},{type:'location_visited',locationId:'mainCourtyard'}]},lines:[
+    {speaker:'Clara',text:'They have hung lanterns from every arch. I was told there would be no formal dancing, which means there will absolutely be formal dancing.',expression:'amused'},
+    {speaker:'Lucien',text:'The music is only for the courtyard, not the stage. That makes everyone listen differently.',expression:'warm'},
+    {speaker:'Sophie',text:'If anyone asks, I am here for the lighting. The lighting is very good.',expression:'neutral'},
+  ],choices:[
+    {id:'lantern-company',label:'Invite everyone into one circle',relationshipEffects:[{relationshipId:'r2',points:14},{relationshipId:'r3',points:12},{relationshipId:'r5',points:10}],flags:['lantern_company'],response:[{speaker:'Clara',text:'A social plan with no seating chart. We are growing reckless.',expression:'amused'}]},
+    {id:'lantern-listen',label:'Find a quiet edge and listen to the music',relationshipEffects:[{relationshipId:'r3',points:18}],flags:['lantern_listened'],response:[{speaker:'Lucien',text:'You noticed the pause before the melody returned. Most people only notice the lights.',expression:'warm'}]},
+  ],reward:{coins:24,xp:32}},
+  {id:'y1-dec-holiday-letters',chapter:8,title:'Letters Before the Winter Break',summary:'Before the academy closes, everyone must decide what they are willing to send home.',status:'locked',startsAt:'2026-12-20',optional:true,locationId:'dormCommon',castIds:['r2','r3','r6'],priority:74,triggers:{mode:'ALL',conditions:[{type:'scene_complete',sceneId:'y1-dec-winter-performance'},{type:'location_visited',locationId:'dormCommon'}]},lines:[
+    {speaker:'Clara',text:'I have written four versions of the same holiday letter. In one, I sound mature. In another, I sound like I need rescuing.',expression:'worried'},
+    {speaker:'Lucien',text:'You could write the version that is true and let it be less impressive.',expression:'warm'},
+    {speaker:'Mrs. Finch',text:'A letter is not improved by pretending the year was simpler than it was.',expression:'stern'},
+  ],choices:[
+    {id:'holiday-honest',label:'Write an honest letter about the year',relationshipEffects:[{relationshipId:'r2',points:16},{relationshipId:'r6',points:12}],flags:['holiday_honesty'],response:[{speaker:'Mrs. Finch',text:'There. A record of a life, rather than a brochure for one.',expression:'warm'}]},
+    {id:'holiday-gift',label:'Make a small gift instead of explaining everything',relationshipEffects:[{relationshipId:'r3',points:12},{relationshipId:'r2',points:12}],flags:['holiday_gift'],response:[{speaker:'Clara',text:'A handmade gift is still communication. Especially if it is not secretly a schedule.',expression:'amused'}]},
+  ],reward:{coins:30,xp:40}},
+  {id:'y1-apr-garden-festival',chapter:12,title:'The Garden Festival',summary:'The first warm festival of the year asks whether the company can rest together as well as work.',status:'locked',startsAt:'2027-04-15',optional:true,locationId:'formalGardens',castIds:['r2','r3','r4','r5'],priority:70,triggers:{mode:'ALL',conditions:[{type:'scene_complete',sceneId:'y1-apr-spring-casting'},{type:'location_visited',locationId:'formalGardens'}]},lines:[
+    {speaker:'Amara',text:'No corrections today. If you see someone carrying too many chairs, help them without turning it into a lesson.',expression:'warm'},
+    {speaker:'Sophie',text:'I was promised a festival. So far I have been assigned a ribbon, two chairs, and Clara’s opinions.',expression:'amused'},
+    {speaker:'Clara',text:'The roses are out early. Even they appear to have better timing than we do.',expression:'amused'},
+  ],choices:[
+    {id:'garden-host',label:'Help host the festival',relationshipEffects:[{relationshipId:'r2',points:14},{relationshipId:'r4',points:14}],flags:['garden_host'],response:[{speaker:'Amara',text:'You made room for other people to enjoy the day. That is a form of leadership.',expression:'warm'}]},
+    {id:'garden-wander',label:'Leave the work and wander with friends',relationshipEffects:[{relationshipId:'r3',points:10},{relationshipId:'r5',points:14}],flags:['garden_wandered'],response:[{speaker:'Sophie',text:'Do not repeat this, but I am glad we left the schedule behind for an hour.',expression:'warm'}]},
+  ],reward:{coins:26,xp:36}},
+  {id:'y1-jun-closing-ceremony',chapter:14,title:'The Closing Ceremony',summary:'The academy gathers one last time before summer turns everyone into a letter, a plan, or a promise.',status:'locked',startsAt:'2027-06-20',locationId:'mainCourtyard',castIds:['r1','r2','r3','r4','r5','r6'],priority:118,triggers:{mode:'ALL',conditions:[{type:'scene_complete',sceneId:'y1-jun-banquet'},{type:'location_visited',locationId:'mainCourtyard'}]},lines:[
+    {speaker:'Madame Élodie',text:'A year is not a verdict. It is a shape you carry into the next room.',expression:'warm'},
+    {speaker:'Clara',text:'I have made a summer correspondence schedule. Nobody agreed to it, which is why it is still perfect.',expression:'amused'},
+    {speaker:'Mrs. Finch',text:'Leave one thing unfinished on purpose. It gives the future somewhere to begin.',expression:'neutral'},
+  ],choices:[
+    {id:'closing-return',label:'Promise to return curious',relationshipEffects:[{relationshipId:'r1',points:16},{relationshipId:'r6',points:12}],flags:['closing_curious'],response:[{speaker:'Madame Élodie',text:'Good. Curiosity travels better than certainty.',expression:'warm'}]},
+    {id:'closing-letters',label:'Promise to keep writing to the people here',relationshipEffects:[{relationshipId:'r2',points:18},{relationshipId:'r3',points:14},{relationshipId:'r5',points:14}],flags:['closing_letters'],response:[{speaker:'Clara',text:'Excellent. I have stationery, color coding, and absolutely no restraint.',expression:'amused'}]},
+  ],reward:{coins:45,xp:65}},
+  {id:'y1-interlude-sep-conservatory',chapter:5,title:'The Conservatory Before Breakfast',summary:'A quiet morning gives the academy a different kind of lesson.',status:'locked',startsAt:'2026-09-15',optional:true,locationId:'conservatory',castIds:['r4'],priority:38,triggers:{mode:'ALL',conditions:[{type:'scene_complete',sceneId:'y1-sep-first-class'},{type:'location_visited',locationId:'conservatory'}]},lines:[
+    {speaker:'Amara',text:'You found the conservatory before the day became loud. That is a useful habit, though not one I can assign for credit.',expression:'warm'},
+    {speaker:'Narrator',text:'The glass roof holds the first pale light. For once, nobody is asking what you will become by lunchtime.'},
+  ],choices:[
+    {id:'conservatory-breathe',label:'Stay and let the morning be quiet',relationshipEffects:[{relationshipId:'r4',points:12}],flags:['morning_quiet'],response:[{speaker:'Amara',text:'Rest is not the opposite of discipline. Sometimes it is how discipline survives.',expression:'warm'}]},
+    {id:'conservatory-plan',label:'Ask Amara how she plans a difficult day',relationshipEffects:[{relationshipId:'r4',points:14}],flags:['morning_planning'],response:[{speaker:'Amara',text:'Choose one necessary thing, one generous thing, and one thing you will not make worse by rushing.',expression:'warm'}]},
+  ],reward:{coins:12,xp:18}},
+  {id:'y1-interlude-oct-library',chapter:6,title:'The Borrower Who Returned a Book',summary:'A small library mystery is resolved without anyone needing to be dramatic.',status:'locked',startsAt:'2026-10-12',optional:true,locationId:'library',castIds:['r2','r6'],priority:36,triggers:{mode:'ALL',conditions:[{type:'scene_complete',sceneId:'y1-oct-archive'},{type:'location_visited',locationId:'library'}]},lines:[
+    {speaker:'Clara',text:'Someone returned a book with three pressed leaves inside and no apology for the mud.',expression:'amused'},
+    {speaker:'Mrs. Finch',text:'The book was overdue by eleven years. I am choosing to call this a successful return.',expression:'neutral'},
+  ],choices:[
+    {id:'library-forgive',label:'Help restore the damaged pages',relationshipEffects:[{relationshipId:'r6',points:14}],flags:['library_repair'],response:[{speaker:'Mrs. Finch',text:'Care is often less glamorous than discovery. It is no less important.',expression:'warm'}]},
+    {id:'library-question',label:'Ask Clara who could have left the leaves',relationshipEffects:[{relationshipId:'r2',points:14}],flags:['library_curiosity'],response:[{speaker:'Clara',text:'I knew you would ask. Fortunately, I have already made a list and color-coded the suspicious leaves.',expression:'amused'}]},
+  ],reward:{coins:14,xp:20}},
+  {id:'y1-interlude-nov-tea',chapter:7,title:'Five Minutes of Tea',summary:'The common room offers a brief truce between assessments and rehearsal.',status:'locked',startsAt:'2026-11-15',optional:true,locationId:'dormCommon',castIds:['r2','r5'],priority:35,triggers:{mode:'ALL',conditions:[{type:'scene_complete',sceneId:'y1-nov-midterm'},{type:'location_visited',locationId:'dormCommon'}]},lines:[
+    {speaker:'Clara',text:'I made tea for everyone and only mislabeled one cup. This is a personal best.',expression:'amused'},
+    {speaker:'Sophie',text:'If mine is the one labeled “bravery,” I object to the implication.',expression:'stern'},
+    {speaker:'Narrator',text:'For five minutes, the room is allowed to be about tea instead of performance.'},
+  ],choices:[
+    {id:'tea-listen',label:'Let Sophie complain without correcting her',relationshipEffects:[{relationshipId:'r5',points:16}],flags:['tea_listened'],response:[{speaker:'Sophie',text:'You are strangely tolerable when you do not try to solve me.',expression:'warm'}]},
+    {id:'tea-laugh',label:'Make Clara laugh hard enough to spill her tea',relationshipEffects:[{relationshipId:'r2',points:16}],flags:['tea_laughed'],response:[{speaker:'Clara',text:'I am choosing to remember the laughter and not the upholstery.',expression:'amused'}]},
+  ],reward:{coins:14,xp:20}},
+  {id:'y1-interlude-jan-reflection',chapter:9,title:'The Room with No Applause',summary:'A winter afternoon in the Reflection Room makes space for a conversation without a performance.',status:'locked',startsAt:'2027-01-18',optional:true,locationId:'reflection',castIds:['r4'],priority:40,triggers:{mode:'ALL',conditions:[{type:'scene_complete',sceneId:'y1-jan-return'},{type:'location_visited',locationId:'reflection'}]},lines:[
+    {speaker:'Amara',text:'People come here expecting to find a better version of themselves waiting in the chair.',expression:'neutral'},
+    {speaker:'Narrator',text:'The room is warm, quiet, and entirely unimpressed by the calendar.'},
+  ],choices:[
+    {id:'reflection-rest',label:'Admit that you are tired',relationshipEffects:[{relationshipId:'r4',points:16}],flags:['winter_rest'],response:[{speaker:'Amara',text:'Good. Honesty is a better starting point than a heroic schedule.',expression:'warm'}]},
+    {id:'reflection-return',label:'Name one thing you still want to try',relationshipEffects:[{relationshipId:'r4',points:14}],flags:['winter_return'],response:[{speaker:'Amara',text:'Then keep it small enough to begin before you feel ready.',expression:'warm'}]},
+  ],reward:{coins:12,xp:18}},
+  {id:'y1-interlude-feb-theatre',chapter:10,title:'The Empty Seats',summary:'The theatre is empty between rehearsals, which makes it possible to hear what the room remembers.',status:'locked',startsAt:'2027-02-20',optional:true,locationId:'theatreSeats',castIds:['r3','r5'],priority:37,triggers:{mode:'ALL',conditions:[{type:'scene_complete',sceneId:'y1-feb-duet'},{type:'location_visited',locationId:'theatreSeats'}]},lines:[
+    {speaker:'Lucien',text:'An empty theatre is not silent. It keeps the shape of every note people thought nobody heard.',expression:'warm'},
+    {speaker:'Sophie',text:'That sounds poetic. I dislike that I understand what you mean.',expression:'amused'},
+  ],choices:[
+    {id:'theatre-listen',label:'Ask Lucien to play one unfinished phrase',relationshipEffects:[{relationshipId:'r3',points:16}],flags:['theatre_phrase'],response:[{speaker:'Lucien',text:'Unfinished is not the same as failed. I am trying to remember that.',expression:'warm'}]},
+    {id:'theatre-imagine',label:'Imagine what the seats will see next',relationshipEffects:[{relationshipId:'r5',points:14}],flags:['theatre_imagined'],response:[{speaker:'Sophie',text:'Fine. For one minute, we can imagine the audience is kind and the floor is forgiving.',expression:'warm'}]},
+  ],reward:{coins:15,xp:22}},
+  {id:'y1-interlude-mar-lakeside',chapter:11,title:'The Long Way Around the Lake',summary:'After assessment week, the longer path home becomes its own small decision.',status:'locked',startsAt:'2027-03-20',optional:true,locationId:'lakeside',castIds:['r1','r6'],priority:34,triggers:{mode:'ALL',conditions:[{type:'scene_complete',sceneId:'y1-mar-exams'},{type:'location_visited',locationId:'lakeside'}]},lines:[
+    {speaker:'Mrs. Finch',text:'The shortest route is not always the route that returns you to yourself.',expression:'warm'},
+    {speaker:'Madame Élodie',text:'Assessment week is finished. You may stop measuring every breath now.',expression:'amused'},
+  ],choices:[
+    {id:'lake-release',label:'Leave the week behind for one evening',relationshipEffects:[{relationshipId:'r1',points:12},{relationshipId:'r6',points:10}],flags:['lake_released'],response:[{speaker:'Madame Élodie',text:'There is the difference between reflection and rehearsal. One of them eventually ends.',expression:'warm'}]},
+    {id:'lake-record',label:'Write down what the week taught you',relationshipEffects:[{relationshipId:'r6',points:14}],flags:['lake_recorded'],response:[{speaker:'Mrs. Finch',text:'Keep the record, but do not let it become a cage made of accurate sentences.',expression:'warm'}]},
+  ],reward:{coins:13,xp:20}},
+  {id:'y1-interlude-apr-atelier',chapter:12,title:'A Loose Thread in the Atelier',summary:'A costume fitting turns into a lesson about repair, patience, and who gets noticed.',status:'locked',startsAt:'2027-04-20',optional:true,locationId:'atelier',castIds:['r4','r5'],priority:39,triggers:{mode:'ALL',conditions:[{type:'scene_complete',sceneId:'y1-apr-spring-casting'},{type:'location_visited',locationId:'atelier'}]},lines:[
+    {speaker:'Amara',text:'A costume does not have to be perfect to be worth repairing.',expression:'warm'},
+    {speaker:'Sophie',text:'Everyone notices a loose thread once it is onstage. Nobody notices the hour someone spent fixing it.',expression:'worried'},
+  ],choices:[
+    {id:'atelier-repair',label:'Stay and help with the repair',relationshipEffects:[{relationshipId:'r4',points:14}],flags:['atelier_repaired'],response:[{speaker:'Amara',text:'Useful work is still useful when it never becomes a story anyone tells about you.',expression:'warm'}]},
+    {id:'atelier-sophie',label:'Ask Sophie what she wants people to notice',relationshipEffects:[{relationshipId:'r5',points:18}],flags:['atelier_seen'],response:[{speaker:'Sophie',text:'That is an unfairly good question. I was prepared for thread, not honesty.',expression:'warm'}]},
+  ],reward:{coins:16,xp:23}},
+  {id:'y1-interlude-may-garden',chapter:13,title:'The Last Ordinary Tuesday',summary:'Before the final rehearsals take over everything, the garden offers one ordinary afternoon.',status:'locked',startsAt:'2027-05-20',optional:true,locationId:'practiceGarden',castIds:['r2','r3'],priority:33,triggers:{mode:'ALL',conditions:[{type:'scene_complete',sceneId:'y1-may-final-review'},{type:'location_visited',locationId:'practiceGarden'}]},lines:[
+    {speaker:'Clara',text:'I have decided this is not a rehearsal. If anyone begins counting, I am leaving.',expression:'amused'},
+    {speaker:'Lucien',text:'The garden does not care whether the ending is clean. That may be why it is so restful.',expression:'warm'},
+  ],choices:[
+    {id:'garden-ordinary',label:'Let the afternoon stay ordinary',relationshipEffects:[{relationshipId:'r2',points:16}],flags:['ordinary_afternoon'],response:[{speaker:'Clara',text:'Good. We should remember that not every beautiful thing needs a climax.',expression:'warm'}]},
+    {id:'garden-music',label:'Ask Lucien for one last piece of music',relationshipEffects:[{relationshipId:'r3',points:16}],flags:['ordinary_music'],response:[{speaker:'Lucien',text:'One piece, then. No encore. We should leave something for the future.',expression:'warm'}]},
+  ],reward:{coins:12,xp:19}},
+  {id:'y1-quest-pointe-shoes',chapter:5,title:'The Shoes with the Worn Ribbons',summary:'Madame Élodie gives you something that carries more history than polish.',status:'locked',startsAt:'2026-09-15',optional:true,locationId:'primaryStudio',castIds:['r1'],priority:82,triggers:{mode:'ALL',conditions:[{type:'story_flag',flag:'quest_q-releve-foundations_complete',label:'Complete Relevé Foundations'}]},lines:[
+    {speaker:'Madame Élodie',text:'These are not beautiful anymore. That is not the same as saying they are finished.',expression:'warm'},
+    {speaker:'Narrator',text:'The ribbons are softened by years of hands and rosin. The shoes look less like a prize than an argument for continuing.'},
+    {speaker:'Madame Élodie',text:'Wear them when you need to remember that a dancer is made by returning to the work, not by looking untouched.'},
+  ],choices:[
+    {id:'pointe-accept',label:'Accept the shoes and promise to use them carefully',relationshipEffects:[{relationshipId:'r1',points:20}],flags:['pointe_shoes_received'],response:[{speaker:'Madame Élodie',text:'Good. Sentiment is allowed. Care is required.',expression:'warm'}]},
+    {id:'pointe-question',label:'Ask what she remembers about wearing them',relationshipEffects:[{relationshipId:'r1',points:24}],flags:['pointe_history_asked'],response:[{speaker:'Madame Élodie',text:'I remember that the first useful lesson was learning when not to force the next step.',expression:'warm'}]},
+  ],reward:{coins:18,xp:30}},
+  {id:'y1-quest-library-card',chapter:7,title:'The Card Behind the Desk',summary:'Mrs. Finch decides that repeated visits deserve a name and a small privilege.',status:'locked',startsAt:'2026-11-01',optional:true,locationId:'library',castIds:['r6'],priority:78,triggers:{mode:'ALL',conditions:[{type:'story_flag',flag:'quest_q-library-regular_complete',label:'Become a familiar face in the library'}]},lines:[
+    {speaker:'Mrs. Finch',text:'Three visits is not a record. It is a pattern.',expression:'amused'},
+    {speaker:'Narrator',text:'She slides a card across the desk. Your name is written in the careful handwriting used for books that matter.'},
+    {speaker:'Mrs. Finch',text:'Now you may ask me where the academy keeps the books it is not ready to admit it owns.'},
+  ],choices:[
+    {id:'library-card-accept',label:'Accept the card and ask about the hidden shelf',relationshipEffects:[{relationshipId:'r6',points:22}],flags:['library_card_received'],response:[{speaker:'Mrs. Finch',text:'Curiosity with a card is much easier to supervise.',expression:'amused'}]},
+    {id:'library-card-thanks',label:'Thank her and offer to repair a damaged book',relationshipEffects:[{relationshipId:'r6',points:26}],flags:['library_card_care'],response:[{speaker:'Mrs. Finch',text:'Excellent. Belonging is often proved by what you are willing to care for.',expression:'warm'}]},
+  ],reward:{coins:22,xp:34}},
 ];

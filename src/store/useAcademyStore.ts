@@ -1,17 +1,20 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { seedRelationships, seedScenes, seedSchedule, seedTasks, seedWardrobe } from '../data/seed';
+import { seedMentorQuests, seedRelationships, seedScenes, seedSchedule, seedTasks, seedWardrobe, seedWardrobeSlots } from '../data/seed';
 import { buildStoryQueue, StoryTriggerContext } from '../story/triggerEngine';
-import { AcademyBook, AvatarPoseId, CustomArtAsset, DailyGift, DailyPreferences, FocusSession, JournalEntry, Notebook, Relationship, SavedLook, ScheduleBlock, StatKey, StoryScene, StorySceneProgress, StudyNote, Task, WardrobeItem } from '../types';
+import { AcademyBook, AvatarPoseId, CustomArtAsset, DailyGift, DailyPreferences, FocusSession, JournalEntry, MentorQuest, Notebook, Relationship, SavedLook, ScheduleBlock, StatKey, StoryScene, StorySceneProgress, StudyNote, Task, WardrobeItem, WardrobeSlot } from '../types';
 
 interface AcademyState {
+  hasCompletedOnboarding: boolean;
   student: { name: string; level: number; xp: number; coins: number; streak: number };
   stats: Record<StatKey, number>;
   tasks: Task[];
   schedule: ScheduleBlock[];
   relationships: Relationship[];
   wardrobe: WardrobeItem[];
+  wardrobeSlots: WardrobeSlot[];
+  quests: MentorQuest[];
   story: StoryScene[];
   sessions: FocusSession[];
   books: AcademyBook[];
@@ -20,7 +23,11 @@ interface AcademyState {
   storyProgress: StorySceneProgress[];
   storyEventQueue: string[];
   dismissedStoryEvents: string[];
+  dismissedStoryEventDate: string;
+  dailyNpcSceneHistory: Record<string,{date:string;sceneId:string;choiceLabel?:string}[]>;
+  npcKnowledge: Record<string,string[]>;
   visitedLocations: string[];
+  locationVisitCounts: Record<string,number>;
   journalEntries: JournalEntry[];
   notebooks: Notebook[];
   studyNotes: StudyNote[];
@@ -34,7 +41,9 @@ interface AcademyState {
   dailyPreferences:DailyPreferences;
   completeTask: (id: string) => void;
   addTask: (task: Task) => void;
+  addWardrobeSlot: (slot:WardrobeSlot) => void;
   addScheduleBlock: (block:ScheduleBlock) => void;
+  addScheduleBlocks: (blocks:ScheduleBlock[]) => void;
   updateScheduleBlock: (id:string, updates:Partial<ScheduleBlock>) => void;
   deleteScheduleBlock: (id:string) => void;
   duplicateScheduleBlock: (id:string) => void;
@@ -54,6 +63,9 @@ interface AcademyState {
   recordLocationVisit: (locationId:string) => void;
   dismissStoryEvent: (sceneId:string) => void;
   restoreDismissedStoryEvents: () => void;
+  recordDailyNpcScene: (npcId:string,date:string,sceneId:string) => void;
+  recordDailyNpcChoice: (npcId:string,date:string,sceneId:string,choiceLabel:string,relationshipPoints:number) => void;
+  unlockNpcKnowledge: (npcId:string,knowledgeKey:string) => void;
   addJournalEntry: (entry:JournalEntry) => void;
   updateJournalEntry: (id:string, updates:Partial<JournalEntry>) => void;
   deleteJournalEntry: (id:string) => void;
@@ -71,17 +83,21 @@ interface AcademyState {
   claimDailyGift:(dateKey:string,gift:DailyGift)=>void;
   completeDailyBlock:(dateKey:string,blockId:string,kind:Task['kind'])=>void;
   setDailyPreferences:(updates:Partial<DailyPreferences>)=>void;
+  completeOnboarding:(name:string,remindersEnabled:boolean)=>void;
   restoreBackup:(data:any)=>void;
   resetDemo: () => void;
 }
 
 const initial = {
+  hasCompletedOnboarding: false,
   student: { name:'Grace', level:1, xp:65, coins:175, streak:4 },
   stats: { ballet:42, strength:28, flexibility:31, academics:38, french:35, wellbeing:22 },
   tasks: seedTasks,
   schedule: seedSchedule,
   relationships: seedRelationships,
   wardrobe: seedWardrobe,
+  wardrobeSlots: seedWardrobeSlots,
+  quests: seedMentorQuests,
   story: seedScenes,
   sessions: [] as FocusSession[],
   books: [] as AcademyBook[],
@@ -90,7 +106,11 @@ const initial = {
   storyProgress: [] as StorySceneProgress[],
   storyEventQueue: [] as string[],
   dismissedStoryEvents: [] as string[],
+  dismissedStoryEventDate: '',
+  dailyNpcSceneHistory: {} as Record<string,{date:string;sceneId:string;choiceLabel?:string}[]>,
+  npcKnowledge: {} as Record<string,string[]>,
   visitedLocations: [] as string[],
+  locationVisitCounts: {} as Record<string,number>,
   journalEntries: [] as JournalEntry[],
   notebooks: [
     {id:'notebook-academics',name:'Academics',color:'#8B789A',createdAt:new Date().toISOString()},
@@ -107,8 +127,10 @@ const initial = {
   lastActiveDate: '',
   dailyPreferences:{remindersEnabled:false,reminderHour:16,reminderMinute:0} as DailyPreferences,
 };
+const mergeSeedCollection=(seedItems:any[],savedItems:any[])=>[...seedItems.map(seed=>({...seed,...savedItems.find(saved=>saved.id===seed.id)})),...savedItems.filter(saved=>!seedItems.some(seed=>seed.id===saved.id))];
 
 const levelFromXp = (xp: number) => Math.floor(xp / 150) + 1;
+const localDateKey=(date=new Date())=>`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
 const dateDistance=(from:string,to:string)=>Math.round((new Date(`${to}T12:00:00`).getTime()-new Date(`${from}T12:00:00`).getTime())/86_400_000);
 const streakAfterActivity=(student:AcademyState['student'],lastActiveDate:string,dateKey:string)=>!lastActiveDate?1:lastActiveDate===dateKey?student.streak:dateDistance(lastActiveDate,dateKey)===1?student.streak+1:1;
 
@@ -129,6 +151,12 @@ function storyRefresh(state:AcademyState,patch:Partial<AcademyState>={},nowIso?:
   });
   return {...patch,storyEventQueue,story};
 }
+function advanceQuests(state:AcademyState,matches:(quest:MentorQuest)=>boolean):Partial<AcademyState> {
+  const quests=state.quests.map(quest=>matches(quest)&&!quest.completed?{...quest,progress:Math.min(quest.goal,quest.progress+1),completed:quest.progress+1>=quest.goal}:quest);
+  const completedIds=quests.filter(quest=>quest.completed&&!state.quests.find(old=>old.id===quest.id)?.completed).map(quest=>quest.id);
+  const rewardIds=quests.filter(quest=>completedIds.includes(quest.id)).map(quest=>quest.rewardItemId);
+  return {quests,wardrobe:rewardIds.length?state.wardrobe.map(item=>rewardIds.includes(item.id)?{...item,owned:true,unlock:undefined}:item):state.wardrobe,storyFlags:completedIds.length?Array.from(new Set([...state.storyFlags,...completedIds.map(id=>`quest_${id}_complete`)])):state.storyFlags};
+}
 
 export const useAcademyStore = create<AcademyState>()(persist((set) => ({
   ...initial,
@@ -143,7 +171,9 @@ export const useAcademyStore = create<AcademyState>()(persist((set) => ({
     }) as AcademyState;
   }),
   addTask: (task) => set((state) => ({ tasks:[...state.tasks, task] })),
+  addWardrobeSlot: (slot) => set((state)=>({wardrobeSlots:[...state.wardrobeSlots,slot]})),
   addScheduleBlock: (block) => set((state)=>storyRefresh(state,{schedule:[...state.schedule,block]}) as AcademyState),
+  addScheduleBlocks: (blocks) => set((state)=>storyRefresh(state,{schedule:[...state.schedule,...blocks]}) as AcademyState),
   updateScheduleBlock: (id, updates) => set((state)=>storyRefresh(state,{schedule:state.schedule.map(block=>block.id===id?{...block,...updates,id}:block)}) as AcademyState),
   deleteScheduleBlock: (id) => set((state)=>storyRefresh(state,{schedule:state.schedule.filter(block=>block.id!==id)}) as AcademyState),
   duplicateScheduleBlock: (id) => set((state)=>{
@@ -178,7 +208,8 @@ export const useAcademyStore = create<AcademyState>()(persist((set) => ({
   buyItem: (id) => set((state) => {
     const item = state.wardrobe.find((entry) => entry.id === id);
     if (!item || item.owned || item.unlock || state.student.coins < item.price) return state;
-    return storyRefresh(state,{ wardrobe:state.wardrobe.map((entry) => entry.id === id ? { ...entry, owned:true } : entry), student:{ ...state.student, coins:state.student.coins - item.price } }) as AcademyState;
+    const questPatch=advanceQuests(state,quest=>quest.kind==='item_owned'&&quest.target===id);
+    return storyRefresh(state,{...questPatch,wardrobe:state.wardrobe.map((entry) => entry.id === id ? { ...entry, owned:true } : entry), student:{ ...state.student, coins:state.student.coins - item.price } }) as AcademyState;
   }),
   equipItem: (id) => set((state) => {
     const item = state.wardrobe.find((entry) => entry.id === id);
@@ -187,7 +218,9 @@ export const useAcademyStore = create<AcademyState>()(persist((set) => ({
   }),
   finishSession: (session, stat) => set((state) => {
     const xp = state.student.xp + session.xp;
-    return storyRefresh(state,{ sessions:[session, ...state.sessions], stats:{ ...state.stats, [stat]:state.stats[stat] + session.xp }, student:{ ...state.student, xp, coins:state.student.coins + Math.ceil(session.minutes / 2), level:levelFromXp(xp) } }) as AcademyState;
+    const isReleveSession=session.title.toLowerCase().includes('relev');
+    const questPatch=advanceQuests(state,quest=>quest.kind==='session_kind'&&(quest.target==='releve'?isReleveSession:quest.target===session.kind));
+    return storyRefresh(state,{...questPatch,sessions:[session, ...state.sessions], stats:{ ...state.stats, [stat]:state.stats[stat] + session.xp }, student:{ ...state.student, xp, coins:state.student.coins + Math.ceil(session.minutes / 2), level:levelFromXp(xp) } }) as AcademyState;
   }),
   addRelationshipPoints: (id, points) => set((state) => storyRefresh(state,{ relationships:state.relationships.map((r) => r.id === id ? { ...r, points:r.points + points, level:Math.floor((r.points + points) / 100) + 1 } : r) }) as AcademyState),
   addBook: (book) => set((state) => ({ books:[book,...state.books] })),
@@ -205,14 +238,36 @@ export const useAcademyStore = create<AcademyState>()(persist((set) => ({
     return storyRefresh(state,{ selectedPose:look.poseId, wardrobe:state.wardrobe.map(item=>({...item,equipped:look.equippedItemIds.includes(item.id)})) }) as AcademyState;
   }),
   removeSavedLook: (id) => set((state) => ({ savedLooks:state.savedLooks.filter(look=>look.id!==id) })),
-  refreshStoryEvents: (nowIso) => set((state)=>storyRefresh(state,{},nowIso) as AcademyState),
+  refreshStoryEvents: (nowIso) => set((state)=>{
+    const today=localDateKey(nowIso?new Date(nowIso):new Date());
+    const dismissedStoryEvents=state.dismissedStoryEventDate&&state.dismissedStoryEventDate!==today?[]:state.dismissedStoryEvents;
+    return storyRefresh(state,{dismissedStoryEvents,dismissedStoryEventDate:today},nowIso) as AcademyState;
+  }),
   recordLocationVisit: (locationId) => set((state)=>{
     const visitedLocations=state.visitedLocations.includes(locationId)?state.visitedLocations:[...state.visitedLocations,locationId];
-    return storyRefresh(state,{visitedLocations}) as AcademyState;
+    const locationVisitCounts={...state.locationVisitCounts,[locationId]:(state.locationVisitCounts[locationId]??0)+1};
+    const questPatch=advanceQuests(state,quest=>quest.kind==='location_visit'&&quest.target===locationId);
+    return storyRefresh(state,{...questPatch,visitedLocations,locationVisitCounts}) as AcademyState;
   }),
-  dismissStoryEvent: (sceneId) => set((state)=>storyRefresh(state,{dismissedStoryEvents:Array.from(new Set([...state.dismissedStoryEvents,sceneId]))}) as AcademyState),
-  restoreDismissedStoryEvents: () => set((state)=>storyRefresh(state,{dismissedStoryEvents:[]}) as AcademyState),
-  addJournalEntry: (entry) => set((state)=>storyRefresh(state,{journalEntries:[entry,...state.journalEntries]}) as AcademyState),
+  dismissStoryEvent: (sceneId) => set((state)=>storyRefresh(state,{dismissedStoryEvents:Array.from(new Set([...state.dismissedStoryEvents,sceneId])),dismissedStoryEventDate:localDateKey()}) as AcademyState),
+  restoreDismissedStoryEvents: () => set((state)=>storyRefresh(state,{dismissedStoryEvents:[],dismissedStoryEventDate:''}) as AcademyState),
+  recordDailyNpcScene: (npcId,date,sceneId) => set((state)=>{
+    const history=state.dailyNpcSceneHistory[npcId]??[];
+    if(history.some(entry=>entry.date===date&&entry.sceneId===sceneId))return state;
+    return {dailyNpcSceneHistory:{...state.dailyNpcSceneHistory,[npcId]:[...history,{date,sceneId}].slice(-12)}};
+  }),
+  recordDailyNpcChoice: (npcId,date,sceneId,choiceLabel,relationshipPoints) => set((state)=>{
+    const history=state.dailyNpcSceneHistory[npcId]??[];
+    const existing=history.find(entry=>entry.date===date&&entry.sceneId===sceneId);
+    if(existing?.choiceLabel)return state;
+    const nextHistory=existing
+      ? history.map(entry=>entry===existing?{...entry,choiceLabel}:entry)
+      : [...history,{date,sceneId,choiceLabel}].slice(-12);
+    const relationships=relationshipPoints?state.relationships.map(relationship=>relationship.id===npcId?{...relationship,points:relationship.points+relationshipPoints,level:Math.floor((relationship.points+relationshipPoints)/100)+1}:relationship):state.relationships;
+    return {dailyNpcSceneHistory:{...state.dailyNpcSceneHistory,[npcId]:nextHistory},relationships};
+  }),
+  unlockNpcKnowledge: (npcId,knowledgeKey) => set((state)=>({npcKnowledge:{...state.npcKnowledge,[npcId]:Array.from(new Set([...(state.npcKnowledge[npcId]??[]),knowledgeKey]))}})),
+  addJournalEntry: (entry) => set((state)=>storyRefresh(state,{...advanceQuests(state,quest=>quest.kind==='journal_template'&&quest.target===entry.template),journalEntries:[entry,...state.journalEntries]}) as AcademyState),
   updateJournalEntry: (id, updates) => set((state)=>storyRefresh(state,{journalEntries:state.journalEntries.map(entry=>entry.id===id?{...entry,...updates,id,updatedAt:new Date().toISOString()}:entry)}) as AcademyState),
   deleteJournalEntry: (id) => set((state)=>storyRefresh(state,{journalEntries:state.journalEntries.filter(entry=>entry.id!==id)}) as AcademyState),
   addNotebook: (notebook) => set((state)=>({notebooks:[...state.notebooks,notebook]})),
@@ -240,13 +295,14 @@ export const useAcademyStore = create<AcademyState>()(persist((set) => ({
     return storyRefresh(state,{dailyBlockCompletions:{...state.dailyBlockCompletions,[dateKey]:[...completed,blockId]},lastActiveDate:dateKey,student:{...state.student,xp,coins:state.student.coins+8,level:levelFromXp(xp),streak:streakAfterActivity(state.student,state.lastActiveDate,dateKey)},stats:{...state.stats,[stat]:(state.stats[stat]??0)+6}}) as AcademyState;
   }),
   setDailyPreferences:(updates)=>set(state=>({dailyPreferences:{...state.dailyPreferences,...updates}})),
+  completeOnboarding:(name,remindersEnabled)=>set(state=>({hasCompletedOnboarding:true,student:{...state.student,name},dailyPreferences:{...state.dailyPreferences,remindersEnabled}})),
   restoreBackup:(data)=>set(state=>storyRefresh(state,{
     student:data.student??state.student,stats:data.stats??state.stats,tasks:Array.isArray(data.tasks)?data.tasks:state.tasks,
     schedule:Array.isArray(data.schedule)?data.schedule:state.schedule,relationships:Array.isArray(data.relationships)?data.relationships:state.relationships,
-    wardrobe:Array.isArray(data.wardrobe)?data.wardrobe:state.wardrobe,sessions:Array.isArray(data.sessions)?data.sessions:state.sessions,
+    wardrobe:Array.isArray(data.wardrobe)?data.wardrobe:state.wardrobe,wardrobeSlots:Array.isArray(data.wardrobeSlots)?data.wardrobeSlots:state.wardrobeSlots,quests:Array.isArray(data.quests)?data.quests:state.quests,sessions:Array.isArray(data.sessions)?data.sessions:state.sessions,
     books:Array.isArray(data.books)?data.books:state.books,selectedPose:data.selectedPose??state.selectedPose,savedLooks:Array.isArray(data.savedLooks)?data.savedLooks:state.savedLooks,
-    storyProgress:Array.isArray(data.storyProgress)?data.storyProgress:state.storyProgress,dismissedStoryEvents:Array.isArray(data.dismissedStoryEvents)?data.dismissedStoryEvents:state.dismissedStoryEvents,
-    visitedLocations:Array.isArray(data.visitedLocations)?data.visitedLocations:state.visitedLocations,journalEntries:Array.isArray(data.journalEntries)?data.journalEntries:state.journalEntries,
+    storyProgress:Array.isArray(data.storyProgress)?data.storyProgress:state.storyProgress,dismissedStoryEvents:Array.isArray(data.dismissedStoryEvents)?data.dismissedStoryEvents:state.dismissedStoryEvents,dismissedStoryEventDate:data.dismissedStoryEventDate??state.dismissedStoryEventDate,dailyNpcSceneHistory:data.dailyNpcSceneHistory??state.dailyNpcSceneHistory,npcKnowledge:data.npcKnowledge??state.npcKnowledge,
+    visitedLocations:Array.isArray(data.visitedLocations)?data.visitedLocations:state.visitedLocations,locationVisitCounts:data.locationVisitCounts??state.locationVisitCounts,journalEntries:Array.isArray(data.journalEntries)?data.journalEntries:state.journalEntries,
     notebooks:Array.isArray(data.notebooks)?data.notebooks:state.notebooks,studyNotes:Array.isArray(data.studyNotes)?data.studyNotes:state.studyNotes,
     avatarDesignNotes:data.avatarDesignNotes??state.avatarDesignNotes,selectedAvatarBust:data.selectedAvatarBust??state.selectedAvatarBust,
     storyFlags:Array.isArray(data.storyFlags)?data.storyFlags:state.storyFlags,customArt:Array.isArray(data.customArt)?data.customArt:state.customArt,
@@ -254,4 +310,4 @@ export const useAcademyStore = create<AcademyState>()(persist((set) => ({
     lastActiveDate:data.lastActiveDate??state.lastActiveDate,dailyPreferences:data.dailyPreferences??state.dailyPreferences,
   }) as AcademyState),
   resetDemo: () => set(initial),
-}), { name:'rba-academy-state-v1', version:9, storage:createJSONStorage(() => AsyncStorage), migrate:(persisted:any)=>({ ...initial, ...persisted, story:seedScenes, relationships:seedRelationships.map(seed=>({...seed,...(persisted?.relationships ?? []).find((old:Relationship)=>old.id===seed.id),name:seed.name,role:seed.role,note:seed.note,personality:seed.personality,likes:seed.likes,dislikes:seed.dislikes,homeLocation:seed.homeLocation,scheduleHint:seed.scheduleHint,initials:seed.initials})), schedule:(persisted?.schedule ?? initial.schedule).filter((block:ScheduleBlock)=>!(block.id==='s3'&&block.title==='French Practice')).map((block:ScheduleBlock)=>({...block,days:block.days?.length?block.days:[block.day],recurrence:block.recurrence??'weekly',affectsStory:block.affectsStory??true})), storyProgress:persisted?.storyProgress ?? (persisted?.story ?? []).filter((scene:StoryScene)=>scene.status==='complete').map((scene:StoryScene)=>({sceneId:scene.id,completions:1})), storyEventQueue:persisted?.storyEventQueue ?? [], dismissedStoryEvents:persisted?.dismissedStoryEvents ?? [], visitedLocations:persisted?.visitedLocations ?? [], journalEntries:persisted?.journalEntries ?? [], notebooks:persisted?.notebooks?.length?persisted.notebooks:initial.notebooks, studyNotes:persisted?.studyNotes ?? [], avatarDesignNotes:persisted?.avatarDesignNotes ?? {}, selectedAvatarBust:persisted?.selectedAvatarBust ?? initial.selectedAvatarBust, storyFlags:persisted?.storyFlags ?? [], customArt:persisted?.customArt ?? [],dailyGiftClaims:persisted?.dailyGiftClaims??[],dailyBlockCompletions:persisted?.dailyBlockCompletions??{},lastActiveDate:persisted?.lastActiveDate??'',dailyPreferences:persisted?.dailyPreferences??initial.dailyPreferences }) }));
+}), { name:'rba-academy-state-v1', version:17, storage:createJSONStorage(() => AsyncStorage), migrate:(persisted:any)=>({ ...initial, ...persisted, hasCompletedOnboarding:persisted?.hasCompletedOnboarding??!!persisted?.student, story:seedScenes, relationships:seedRelationships.map(seed=>({...seed,...(persisted?.relationships ?? []).find((old:Relationship)=>old.id===seed.id),name:seed.name,role:seed.role,note:seed.note,personality:seed.personality,likes:seed.likes,dislikes:seed.dislikes,homeLocation:seed.homeLocation,scheduleHint:seed.scheduleHint,initials:seed.initials})), schedule:(persisted?.schedule ?? initial.schedule).filter((block:ScheduleBlock)=>!(block.id==='s3'&&block.title==='French Practice')).map((block:ScheduleBlock)=>({...block,days:block.days?.length?block.days:[block.day],recurrence:block.recurrence??'weekly',affectsStory:block.affectsStory??true})), storyProgress:persisted?.storyProgress ?? (persisted?.story ?? []).filter((scene:StoryScene)=>scene.status==='complete').map((scene:StoryScene)=>({sceneId:scene.id,completions:1})), storyEventQueue:persisted?.storyEventQueue ?? [], dismissedStoryEvents:persisted?.dismissedStoryEvents ?? [], dismissedStoryEventDate:persisted?.dismissedStoryEventDate??'', dailyNpcSceneHistory:persisted?.dailyNpcSceneHistory??{}, npcKnowledge:persisted?.npcKnowledge??{}, visitedLocations:persisted?.visitedLocations ?? [], locationVisitCounts:persisted?.locationVisitCounts??{}, journalEntries:persisted?.journalEntries ?? [], notebooks:persisted?.notebooks?.length?persisted.notebooks:initial.notebooks, studyNotes:persisted?.studyNotes ?? [], quests:Array.isArray(persisted?.quests)?persisted.quests:initial.quests, wardrobeSlots:Array.isArray(persisted?.wardrobeSlots)?persisted.wardrobeSlots:initial.wardrobeSlots, avatarDesignNotes:persisted?.avatarDesignNotes ?? {}, selectedAvatarBust:persisted?.selectedAvatarBust ?? initial.selectedAvatarBust, storyFlags:persisted?.storyFlags ?? [], customArt:persisted?.customArt ?? [],dailyGiftClaims:persisted?.dailyGiftClaims??[],dailyBlockCompletions:persisted?.dailyBlockCompletions??{},lastActiveDate:persisted?.lastActiveDate??'',dailyPreferences:persisted?.dailyPreferences??initial.dailyPreferences }) }));

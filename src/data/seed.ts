@@ -1,4 +1,4 @@
-import { LearningActivity, Relationship, ScheduleBlock, StoryScene, Task, WardrobeItem } from '../types';
+import { LearningActivity, MentorQuest, Relationship, ScheduleBlock, StoryScene, Task, WardrobeItem, WardrobeSlot } from '../types';
 import { yearOneScenes } from './yearOneStory';
 
 export const seedTasks: Task[] = [
@@ -28,6 +28,40 @@ export const seedWardrobe: WardrobeItem[] = [
   { id:'w4', name:'Pearl Tiara', slot:'accessory', price:220, owned:false, equipped:false, color:'#D8C092' },
   { id:'w5', name:'Soft Ballet Shoes', slot:'shoes', price:0, owned:true, equipped:true, color:'#D8A9A8' },
   { id:'w6', name:'Kings Uniform', slot:'dress', price:0, owned:false, equipped:false, color:'#4B4458', unlock:'Unlocks September 2' },
+  { id:'w7', name:'Madame Élodie’s Old Pointe Shoes', slot:'shoes', price:0, owned:false, equipped:false, color:'#C99191', unlock:'Complete the Relevé Foundations quest' },
+  { id:'w8', name:'Clara’s Rose Ribbon', slot:'accessory', price:0, owned:false, equipped:false, color:'#D59BA8', unlock:'Complete the Conservatory Reading quest' },
+  { id:'w9', name:'Amara’s Recovery Pin', slot:'accessory', price:0, owned:false, equipped:false, color:'#B8C6A8', unlock:'Complete the Gentle Recovery quest' },
+  { id:'w10', name:'Mrs. Finch’s Library Card', slot:'accessory', price:0, owned:false, equipped:false, color:'#A48264', unlock:'Complete the Library Regular quest' },
+  { id:'w11', name:'Sophie’s Silver Practice Pin', slot:'accessory', price:0, owned:false, equipped:false, color:'#B7B8C8', unlock:'Complete the Rose Rehearsal quest' },
+  { id:'w12', name:'Madame Élodie’s Marked Notebook', slot:'accessory', price:0, owned:false, equipped:false, color:'#88706B', unlock:'Complete the Honest Practice Log quest' },
+  { id:'w13', name:'Winter Warm-Up Wrap', slot:'winter', price:90, owned:false, equipped:false, color:'#D7E2E4' },
+  { id:'w14', name:'Spring Garden Layer', slot:'spring', price:95, owned:false, equipped:false, color:'#D7C5A7' },
+  { id:'w15', name:'Fall Academy Ribbon', slot:'fall', price:70, owned:false, equipped:false, color:'#B8785E' },
+  { id:'w16', name:'Summer Practice Layer', slot:'summer', price:80, owned:false, equipped:false, color:'#E6B7A8' },
+  { id:'w17', name:'Christmas Gala Detail', slot:'christmas', price:140, owned:false, equipped:false, color:'#B94E61' },
+  { id:'w18', name:'Halloween Masquerade Detail', slot:'halloween', price:130, owned:false, equipped:false, color:'#5E4B67' },
+];
+
+export const seedWardrobeSlots: WardrobeSlot[] = [
+  {id:'hair',name:'Hair',appearance:'always',createdAt:new Date().toISOString()},
+  {id:'dress',name:'Dress',appearance:'always',createdAt:new Date().toISOString()},
+  {id:'shoes',name:'Shoes',appearance:'always',createdAt:new Date().toISOString()},
+  {id:'accessory',name:'Accessory',appearance:'always',createdAt:new Date().toISOString()},
+  {id:'winter',name:'Winter',appearance:'winter',createdAt:new Date().toISOString()},
+  {id:'spring',name:'Spring',appearance:'spring',createdAt:new Date().toISOString()},
+  {id:'fall',name:'Fall',appearance:'fall',createdAt:new Date().toISOString()},
+  {id:'summer',name:'Summer',appearance:'summer',createdAt:new Date().toISOString()},
+  {id:'christmas',name:'Christmas',appearance:'christmas',createdAt:new Date().toISOString()},
+  {id:'halloween',name:'Halloween',appearance:'halloween',createdAt:new Date().toISOString()},
+];
+
+export const seedMentorQuests: MentorQuest[] = [
+  {id:'q-releve-foundations',title:'Relevé Foundations',description:'Complete three focused relevé sessions and Madame Élodie will give you her old pointe shoes.',mentorId:'r1',kind:'session_kind',target:'releve',goal:3,progress:0,rewardItemId:'w7',completed:false},
+  {id:'q-conservatory-reading',title:'A Page Worth Keeping',description:'Complete one conservatory reading session and Clara will give you her rose ribbon.',mentorId:'r2',kind:'session_kind',target:'reading',goal:1,progress:0,rewardItemId:'w8',completed:false},
+  {id:'q-gentle-recovery',title:'Gentle Recovery',description:'Complete two wellbeing sessions without treating rest like failure.',mentorId:'r4',kind:'session_kind',target:'wellbeing',goal:2,progress:0,rewardItemId:'w9',completed:false},
+  {id:'q-library-regular',title:'A Familiar Face in the Library',description:'Visit the library three times and Mrs. Finch will make you an official library regular.',mentorId:'r6',kind:'location_visit',target:'library',goal:3,progress:0,rewardItemId:'w10',completed:false},
+  {id:'q-rose-rehearsal',title:'The Rose Rehearsal',description:'Buy the Rose Rehearsal Skirt and Sophie will give you a silver practice pin.',mentorId:'r5',kind:'item_owned',target:'w2',goal:1,progress:0,rewardItemId:'w11',completed:false},
+  {id:'q-honest-practice-log',title:'An Honest Practice Log',description:'Write one practice reflection and Madame Élodie will give you her marked notebook.',mentorId:'r1',kind:'journal_template',target:'practice-log',goal:1,progress:0,rewardItemId:'w12',completed:false},
 ];
 
 export const seedScenes: StoryScene[] = [
@@ -107,4 +141,5 @@ export const learningActivities: LearningActivity[] = [
   { id:'a5', kind:'wellbeing', title:'Quiet Room Reset', subtitle:'A low-pressure reset when everything is too loud.', minutes:5, stat:'wellbeing', steps:['Unclench your jaw and shoulders','Take a sip of water','Name the smallest possible next step'] },
   { id:'a6', kind:'wellbeing', title:'Walk the Academy Grounds', subtitle:'Your character explores the gardens while you take a gentle real-world walk.', minutes:15, stat:'wellbeing', steps:['Choose a safe familiar route','Walk at a comfortable pace','Pause if dizzy or unwell','Log one thing you noticed'] },
   { id:'a7', kind:'custom', title:'Make Your Own Session', subtitle:'Choose your own task, timer, and tiny finish line.', minutes:10, stat:'wellbeing', steps:['Name the task','Choose the smallest useful finish line','Work beside your character','Write what you actually did'] },
+  { id:'a8', kind:'practice', title:'Relevé Foundations', subtitle:'Build steady calf strength and balance through a careful, repeatable set.', minutes:10, stat:'ballet', steps:['Warm up gently','Complete three controlled relevé sets','Stop if pain or dizziness appears','Log what felt stable'] },
 ];
