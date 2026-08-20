@@ -18,6 +18,7 @@ export interface Relationship {
 export type WardrobeSlotAppearance='always'|'winter'|'spring'|'fall'|'summer'|'christmas'|'halloween';
 export interface WardrobeSlot { id:string; name:string; appearance:WardrobeSlotAppearance; createdAt:string; }
 export interface WardrobeItem { id: string; name: string; slot: string; price: number; owned: boolean; equipped: boolean; color: string; unlock?: string; }
+export interface ClothingFit { x:number; y:number; scale:number; }
 export interface SavedLook { id:string; name:string; poseId:AvatarPoseId; equippedItemIds:string[]; createdAt:string; }
 export interface DialogueLine { speaker:string; text:string; expression?:'neutral'|'warm'|'amused'|'worried'|'stern'|'surprised'; }
 export interface StoryChoice {
